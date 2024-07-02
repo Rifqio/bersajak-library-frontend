@@ -19,6 +19,9 @@ module.exports = {
     extend: {
       fontFamily: {
         playfair: ["Playfair Display", "serif"],
+        poppins: ["Poppins", "sans-serif"],
+        openSans: ["Open Sans", "sans-serif"],
+        abeezee: ["ABeeZee", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
