@@ -1,5 +1,5 @@
 import { Button } from "@/components";
-import { Heart } from "lucide-react";
+import { Heart, Share2 } from "lucide-react";
 
 const BookDetailPage = () => {
   const book = {
@@ -25,8 +25,12 @@ const BookDetailPage = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-10 w-full rounded-md">
-      <img className="rounded-l-md object-cover h-full" src="https://placehold.co/600x400" alt="Book Cover" />
+    <div className="grid grid-cols-2 gap-10 w-full">
+      <img
+        className="object-cover h-full rounded-md"
+        src="https://unsplash.it/600/400"
+        alt="Book Cover"
+      />
       <div className="mt-14">
         <h3 className="text-sm pb-4 tracking-wide text-gray-500">
           {book.author}
@@ -37,7 +41,7 @@ const BookDetailPage = () => {
         <p className="text-sm pb-8 pt-2 text-gray-600 tracking-normal font-normal leading-loose">
           {book.description}
         </p>
-        
+
         {/* Book details */}
         <div className="grid grid-cols-2 gap-6">
           {generateDescription("Penulis", true)}
@@ -53,8 +57,11 @@ const BookDetailPage = () => {
           {generateDescription(book.totalLike)}
         </div>
 
-        <div className="flex mt-8 justify-around pb-14">
-          <Button variant="outline" className="hover:bg-gray-200" size="icon">
+        <div className="flex mt-8 justify-between pb-14">
+          <Button variant="ghost" className="hover:bg-gray-200" size="icon">
+            <Share2 />
+          </Button>
+          <Button variant="ghost" className="hover:bg-gray-200" size="icon">
             <Heart />
           </Button>
           <Button className="w-[350px] bg-[#E74848] hover:bg-[#851633]">

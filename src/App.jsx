@@ -3,6 +3,7 @@ import "./App.css";
 import HomePage from "./pages/home";
 import DashboardLayout from "./layout/DashboardLayout";
 import BookDetailPage from "./pages/book/book-detail";
+import BookLayout from "./layout/BookLayout";
 
 export const router = createBrowserRouter([
   {
@@ -13,10 +14,20 @@ export const router = createBrowserRouter([
         path: "/",
         element: <HomePage />,
       },
+      // {
+      //   path: "/book/:id",
+      //   element: <BookDetailPage />,
+      // },
+    ],
+  },
+  {
+    path: "book",
+    element: <BookLayout />,
+    children: [
       {
-        path: "/book/:id",
-        element: <BookDetailPage />
-      }
+        path: ":id",
+        element: <BookDetailPage />,
+      },
     ],
   },
 ]);

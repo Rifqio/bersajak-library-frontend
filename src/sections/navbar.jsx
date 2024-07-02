@@ -1,8 +1,9 @@
 import { Button } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
 
-export const Navbar = () => {
+export const Navbar = ({ className }) => {
   const navigate = useNavigate();
 
   const handleNavigate = () => {
@@ -10,7 +11,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="flex justify-between pb-10 items-center">
+    <nav className={`flex justify-between pb-10 items-center ${className}`}>
       <h1
         onClick={handleNavigate}
         className="text-xl text-gray-800 font-bold cursor-pointer"
@@ -25,4 +26,8 @@ export const Navbar = () => {
       </div>
     </nav>
   );
+};
+
+Navbar.propTypes = {
+  className: PropTypes.string,
 };
