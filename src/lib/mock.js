@@ -81,3 +81,24 @@ export const MOCK_WORD_COMPLETIONS = [
     answer: "Madrid",
   },
 ];
+
+export const MOCK_BOOK_LIST = [
+  {
+    id: 1,
+    title: "The Great Gatsby",
+    author: "F. Scott Fitzgerald",
+    imageUrl: "https://unsplash.it/600/400",
+  },
+  {
+    id: 2,
+    title: "To Kill a Mockingbird",
+    author: "Harper Lee",
+    imageUrl: "https://unsplash.it/601/400",
+  },
+  {
+    id: 3,
+    title: "1984",
+    author: "George Orwell",
+    imageUrl: "https://unsplash.it/602/400",
+  },
+];

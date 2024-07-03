@@ -1,5 +1,4 @@
-import { Button } from "@/components";
-import { Skeleton } from "@/components/skeleton";
+import { Button, Skeleton } from "@/components";
 import { Heart, Share2 } from "lucide-react";
 import { useState } from "react";
 

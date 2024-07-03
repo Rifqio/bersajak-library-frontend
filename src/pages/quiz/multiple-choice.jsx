@@ -1,12 +1,17 @@
-import { Button } from "@/components";
-import { Progress } from "@/components/progress";
+import { Button, Progress } from "@/components";
+import { ROUTE } from "@/lib/constants";
 import { MOCK_QUESTIONS } from "@/lib/mock";
+import { CancelDialog } from "@/sections/quiz";
 import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const MultipleChoicePage = () => {
   const { question, options, answer } = MOCK_QUESTIONS[0];
+  const navigate = useNavigate();
+
   const [countdown, setCountdown] = useState(20);
+  const [cancelQuiz, setCancelQuiz] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -46,6 +51,14 @@ export const MultipleChoicePage = () => {
   const onSelectedAnswer = (index, option) => {
     setSelectedIndex(index);
     setSelectedOption(option);
+  };
+
+  const handleBackButton = () => {
+    setCancelQuiz(true);
+  };
+
+  const onCancelQuiz = () => {
+    navigate(ROUTE.Home);
   };
 
   const renderCheckmark = (index) => {
@@ -95,6 +108,14 @@ export const MultipleChoicePage = () => {
           </button>
         ))}
       </div>
+
+      <Button
+        onClick={handleBackButton}
+        className="bg-red-500 mt-8 hover:bg-red-700 font-poppins font-bold text-white"
+      >
+        Kembali
+      </Button>
+      <CancelDialog onOpen={cancelQuiz} onOpenChange={setCancelQuiz} onCancel={onCancelQuiz} />
     </div>
   );
 };

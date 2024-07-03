@@ -1,12 +1,17 @@
-import { Progress } from "@/components/progress";
+import { Button, Progress } from "@/components";
+import { ROUTE } from "@/lib/constants";
 import { MOCK_WORD_COMPLETIONS } from "@/lib/mock";
+import { CancelDialog } from "@/sections/quiz";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const WordCompletionPage = () => {
   // TODO : To get the question from the URL
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [countdown, setCountdown] = useState(20);
+  const [cancelQuiz, setCancelQuiz] = useState(false);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -22,6 +27,15 @@ const WordCompletionPage = () => {
 
   const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
   const splitClue = clue.split("");
+  
+  const handleBackButton = () => {
+    setCancelQuiz(true);
+  };
+
+  const onCancelQuiz = () => {
+    navigate(ROUTE.Home);
+  };
+
   return (
     <div className="mt-16 h-screen flex flex-col">
       <Progress
@@ -55,6 +69,13 @@ const WordCompletionPage = () => {
           />
         ))}
       </div>
+      <Button
+        onClick={handleBackButton}
+        className="bg-red-500 mt-8 hover:bg-red-700 font-poppins font-bold text-white"
+      >
+        Kembali
+      </Button>
+      <CancelDialog onOpen={cancelQuiz} onOpenChange={setCancelQuiz} onCancel={onCancelQuiz} />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import BookList from "@/sections/book-list";
 import BooksIllustration from "../../assets/books.svg";
+import { MOCK_BOOK_LIST } from "@/lib/mock";
 
 const HomePage = () => {
   const heroSection = () => {
@@ -29,8 +30,14 @@ const HomePage = () => {
           Mau baca buku apa hari ini?
         </h1>
         <div className="mt-8 grid grid-cols-3 gap-6">
-          {[1, 2, 3].map((_, index) => (
-            <BookList key={index} title="Judul" author="Test Author" />
+          {MOCK_BOOK_LIST.map((book) => (
+            <BookList
+              key={book.id}
+              id={book.id}
+              title={book.title}
+              author={book.author}
+              imageUrl={book.imageUrl}
+            />
           ))}
         </div>
       </div>

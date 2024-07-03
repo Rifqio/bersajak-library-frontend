@@ -1,13 +1,20 @@
-import { Card, CardContent, CardTitle } from "@/components/card";
+import { Card, CardContent, CardTitle } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
-const BookList = ({ title, author }) => {
+const BookList = ({ id, title, author, imageUrl }) => {
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate(ROUTE.Book + `/${title}`);
+    navigate(ROUTE.Book + `/${id}`);
+  };
+
+  const trimmedTitle = () => {
+    if (title.length > 10) {
+      return title.substring(0, 10) + "...";
+    }
+    return title;
   };
 
   return (
@@ -17,10 +24,10 @@ const BookList = ({ title, author }) => {
     >
       <div
         className="w-full h-3/4 bg-cover bg-center"
-        style={{ backgroundImage: `url(https://placehold.co/600x400)` }}
+        style={{ backgroundImage: `url(${imageUrl})` }}
       ></div>
       <CardContent className="mt-6">
-        <CardTitle>{title.substring(0, 10)}</CardTitle>
+        <CardTitle>{trimmedTitle()}</CardTitle>
         <h3 className="text-lg font-medium pt-2 text-gray-600">{author}</h3>
       </CardContent>
     </Card>
@@ -28,8 +35,10 @@ const BookList = ({ title, author }) => {
 };
 
 BookList.propTypes = {
+  id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   author: PropTypes.string.isRequired,
+  imageUrl: PropTypes.string.isRequired,
 };
 
 export default BookList;

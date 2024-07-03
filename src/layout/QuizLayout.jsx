@@ -1,4 +1,4 @@
-import { Container } from "@/components";
+import { Button, Container } from "@/components";
 import { Outlet } from "react-router-dom";
 
 const QuizLayout = () => {
