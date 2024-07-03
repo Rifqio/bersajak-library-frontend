@@ -2,9 +2,9 @@ import { createBrowserRouter } from "react-router-dom";
 import "./App.css";
 import { BookLayout, QuizLayout, DashboardLayout } from "./layout";
 import HomePage from "./pages/home";
-import BookDetailPage from "./pages/book/book-detail";
-import { MultipleChoicePage } from "./pages/quiz/multiple-choice";
-import WordCompletionPage from "./pages/quiz/word-completion";
+import { BookDetailPage } from "./pages/book";
+import { MultipleChoicePage, WordCompletionPage } from "./pages/quiz";
+import { Page404 } from "./pages/error";
 
 export const router = createBrowserRouter([
   {
@@ -33,12 +33,22 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "multiple-choice",
-        element: <MultipleChoicePage />
+        element: <MultipleChoicePage />,
       },
       {
         path: "word-completion",
-        element: <WordCompletionPage />
-      }
-    ]
+        element: <WordCompletionPage />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "*",
+        element: <Page404 />,
+      },
+    ],
   },
 ]);
