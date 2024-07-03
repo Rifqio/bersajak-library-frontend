@@ -29,6 +29,9 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         background_1: "#F7F9EC",
+        quiz: {
+          background: "#932C6B"
+        },
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",

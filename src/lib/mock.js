@@ -66,3 +66,18 @@ export const MOCK_QUESTIONS = [
     answer: "A",
   },
 ];
+
+export const MOCK_WORD_COMPLETIONS = [
+  {
+    question: "The capital of France is?",
+    clue: "P___S",
+    imageUrl: "https://unsplash.it/640/425?paris",
+    answer: "Paris",
+  },
+  {
+    question: "The capital of Spain is?",
+    clue: "M_d__d",
+    imageUrl: "https://unsplash.it/640/425?spain",
+    answer: "Madrid",
+  },
+];

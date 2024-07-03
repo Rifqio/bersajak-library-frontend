@@ -1,12 +1,26 @@
 import { Button } from "@/components";
+import { Progress } from "@/components/progress";
 import { MOCK_QUESTIONS } from "@/lib/mock";
 import { CircleCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const MultipleChoicePage = () => {
   const { question, options, answer } = MOCK_QUESTIONS[0];
+  const [countdown, setCountdown] = useState(20);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+      };
+    }
+  }, [countdown]);
 
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
   const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
@@ -48,6 +62,10 @@ export const MultipleChoicePage = () => {
 
   return (
     <div className="mt-16 h-screen flex flex-col">
+      <Progress
+        value={(countdown / 20) * 100}
+        className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
+      />
       <div className="text-center pb-32">
         <h1 className="text-4xl text-white font-poppins font-medium">
           {question}

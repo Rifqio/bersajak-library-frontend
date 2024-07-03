@@ -4,6 +4,7 @@ import { BookLayout, QuizLayout, DashboardLayout } from "./layout";
 import HomePage from "./pages/home";
 import BookDetailPage from "./pages/book/book-detail";
 import { MultipleChoicePage } from "./pages/quiz/multiple-choice";
+import WordCompletionPage from "./pages/quiz/word-completion";
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
       {
         path: "multiple-choice",
         element: <MultipleChoicePage />
+      },
+      {
+        path: "word-completion",
+        element: <WordCompletionPage />
       }
     ]
   },
