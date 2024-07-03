@@ -1,7 +1,11 @@
 import { Button } from "@/components";
+import { Skeleton } from "@/components/skeleton";
 import { Heart, Share2 } from "lucide-react";
+import { useState } from "react";
 
 const BookDetailPage = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const book = {
     title: "Et consectetur magna consectetur culpa.",
     author: "John Doe",
@@ -26,10 +30,12 @@ const BookDetailPage = () => {
 
   return (
     <div className="grid grid-cols-2 gap-10 w-full">
+      {!isLoaded && <Skeleton className="object-cover h-full rounded-md" />}
       <img
-        className="object-cover h-full rounded-md"
+        className={`object-cover h-full rounded-md drop-shadow-md ${isLoaded ? '' : 'hidden'}`}
         src="https://unsplash.it/600/400"
         alt="Book Cover"
+        onLoad={() => setIsLoaded(true)}
       />
       <div className="mt-14">
         <h3 className="text-sm pb-4 tracking-wide text-gray-500">

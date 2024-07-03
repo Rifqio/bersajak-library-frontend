@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import "./App.css";
+import { BookLayout, QuizLayout, DashboardLayout } from "./layout";
 import HomePage from "./pages/home";
-import DashboardLayout from "./layout/DashboardLayout";
 import BookDetailPage from "./pages/book/book-detail";
-import BookLayout from "./layout/BookLayout";
+import { MultipleChoicePage } from "./pages/quiz/multiple-choice";
 
 export const router = createBrowserRouter([
   {
@@ -14,10 +14,6 @@ export const router = createBrowserRouter([
         path: "/",
         element: <HomePage />,
       },
-      // {
-      //   path: "/book/:id",
-      //   element: <BookDetailPage />,
-      // },
     ],
   },
   {
@@ -29,5 +25,15 @@ export const router = createBrowserRouter([
         element: <BookDetailPage />,
       },
     ],
+  },
+  {
+    path: "quiz",
+    element: <QuizLayout />,
+    children: [
+      {
+        path: "multiple-choice",
+        element: <MultipleChoicePage />
+      }
+    ]
   },
 ]);
