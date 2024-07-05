@@ -14,11 +14,12 @@ import { get } from "lodash";
 import { useParams } from "react-router-dom";
 import fetcher from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 function validateIndex(questionData) {
   const correctAnswer = questionData.answer;
-  const sanitized = questionData.options.findIndex(option => option.option === correctAnswer);
+  const sanitized = questionData.options.findIndex(
+    (option) => option.option === correctAnswer
+  );
 
   return sanitized;
 }
@@ -26,35 +27,33 @@ function validateIndex(questionData) {
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { transcript, resetTranscript } = useSpeechRecognition();
-
-  const startListening = () => {
-    SpeechRecognition.startListening({ continuous: true, language : 'id-ID' });
-  };
-
-  const stopListening = () => {
-    SpeechRecognition.stopListening();
-  };
+  const { transcript, resetTranscript, startListening, stopListening } = useMicrophone();
 
   const { greeting, stopSpeech } = useSpeaker();
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
   const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
   const [countdown, setCountdown] = useState(20);
   const [cancelQuiz, setCancelQuiz] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState('');
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState("");
+  const [selectedOption, setSelectedOption] = useState("");
   const [numberQuiz, setNumberQuiz] = useState(0);
 
   // fetch data
-  const { data: questionResponse } = useSWR(`/quiz/multiple-choice/${id}?number=${numberQuiz}`, fetcher, {
-    shouldRetryOnError: false,
-    revalidateOnFocus: false,
-  });
+  const { data: questionResponse } = useSWR(
+    `/quiz/multiple-choice/${id}?number=${numberQuiz}`,
+    fetcher,
+    {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    }
+  );
   const questionList = questionResponse?.data || MOCK_QUESTIONS[numberQuiz];
-  const optionList = get(questionList, 'options', []);
-  const question = get(questionList, 'question', '');
-  const answer = get(questionList, 'answer', '');
-  console.log(transcript);
+  const totalQuestion =
+    questionResponse?.data?.totalCount || MOCK_QUESTIONS.length;
+  const optionList = get(questionList, "options", []);
+  const question = get(questionList, "question", "");
+  const answer = get(questionList, "answer", "");
+  console.log(totalQuestion);
 
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
@@ -87,22 +86,23 @@ export const MultipleChoicePage = () => {
     setNumberQuiz((prevPage) => prevPage + 1);
   };
 
-  const handleNextQuiz = () => {  
-    setTimeout(() => {
-      setCountdown(20);
-      setSelectedIndex('');
-      setSelectedOption('');
-      stopListening();
-      handleNext();
-      resetTranscript();
-    }, 3000);
+  const handleNextQuiz = () => {
+    if (numberQuiz < totalQuestion) {
+      setTimeout(() => {
+        setCountdown(20);
+        setSelectedIndex("");
+        setSelectedOption("");
+        stopListening();
+        handleNext();
+        resetTranscript();
+      }, 3000);
+    }
   };
-  
 
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
-  
+
   const renderCheckmark = (index) => {
     if (selectedIndex === index) {
       return (
@@ -116,7 +116,7 @@ export const MultipleChoicePage = () => {
   };
 
   useEffect(() => {
-    if(transcript.includes(answer)){
+    if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
     }
   }, [transcript]);
