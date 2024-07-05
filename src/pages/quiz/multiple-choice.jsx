@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import { MOCK_QUESTIONS } from "@/lib/mock";
@@ -5,15 +6,50 @@ import { CancelDialog } from "@/sections/quiz";
 import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Toastify from "@/components/toast";
+import useSpeaker from "@/components/speaker";
+import useMicrophone from "@/components/input-voice";
+
+function validateIndex(questionData) {
+  const correctAnswer = questionData.answer;
+  const sanitized = questionData.options.findIndex(option => option.option === correctAnswer);
+
+  return sanitized;
+}
+
+const questionData = {
+  question: "What is the capital of France?",
+  options: [
+      { option: "A", text: "New York" },
+      { option: "B", text: "London" },
+      { option: "C", text: "Paris" },
+      { option: "D", text: "Dublin" },
+  ],
+  answer: "C",
+};
 
 export const MultipleChoicePage = () => {
-  const { question, options, answer } = MOCK_QUESTIONS[0];
   const navigate = useNavigate();
-
+  const { transcript } = useMicrophone();
+  const { greeting } = useSpeaker();
+  const { question, options, answer } = MOCK_QUESTIONS[0];
+  const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
+  const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
   const [countdown, setCountdown] = useState(20);
   const [cancelQuiz, setCancelQuiz] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState('');
+  const [selectedOption, setSelectedOption] = useState('');
+
+  useEffect(() => {
+    greeting(question, 3);
+  }, [question, greeting]);
+
+  useEffect(() => {
+    if(transcript.includes(answer)){
+      console.log(transcript);
+      setSelectedIndex(validateIndex(questionData));
+    }
+  }, [transcript]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -26,9 +62,6 @@ export const MultipleChoicePage = () => {
       };
     }
   }, [countdown]);
-
-  const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
-  const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
 
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
@@ -48,9 +81,9 @@ export const MultipleChoicePage = () => {
     e.currentTarget.style.backgroundColor = getBackgroundColor(index, false);
   };
 
-  const onSelectedAnswer = (index, option) => {
+  const onSelectedAnswer = (index, value) => {
     setSelectedIndex(index);
-    setSelectedOption(option);
+    setSelectedOption(value.option);
   };
 
   const handleBackButton = () => {
@@ -75,6 +108,11 @@ export const MultipleChoicePage = () => {
 
   return (
     <div className="mt-16 h-screen flex flex-col">
+      <Toastify
+        transcript={selectedOption || transcript}
+        answer={answer}
+        toastText="Jawaban Anda Benar"
+      />
       <Progress
         value={(countdown / 20) * 100}
         className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
@@ -115,7 +153,11 @@ export const MultipleChoicePage = () => {
       >
         Kembali
       </Button>
-      <CancelDialog onOpen={cancelQuiz} onOpenChange={setCancelQuiz} onCancel={onCancelQuiz} />
+      <CancelDialog
+        onOpen={cancelQuiz}
+        onOpenChange={setCancelQuiz}
+        onCancel={onCancelQuiz}
+      />
     </div>
   );
 };

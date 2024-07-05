@@ -17,6 +17,7 @@ const useSpeaker = () => {
     const synth = window.speechSynthesis;
     countRef.current = 0;
     utteranceRef.current.text = text;
+    utteranceRef.current.rate = 0.8;
     utteranceRef.current.lang = 'id-ID';
 
     const speakHandler = () => {
@@ -33,7 +34,7 @@ const useSpeaker = () => {
     utteranceRef.current.onend = speakHandler;
   };
 
-  return { greeting, stop };
+  return { greeting };
 };
 
 export default useSpeaker;
