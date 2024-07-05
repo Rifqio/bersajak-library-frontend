@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
@@ -10,6 +11,9 @@ import useSpeaker from "@/components/speaker";
 import useMicrophone from "@/components/input-voice";
 import useSWR from "swr";
 import { get } from "lodash";
+import { useParams } from "react-router-dom";
+import fetcher from "@/lib/fetcher";
+import { MOCK_QUESTIONS } from "@/lib/mock";
 
 function validateIndex(questionData) {
   const correctAnswer = questionData.answer;
@@ -31,6 +35,7 @@ const questionData = {
 
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { transcript } = useMicrophone();
   const { greeting } = useSpeaker();
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
@@ -39,36 +44,17 @@ export const MultipleChoicePage = () => {
   const [cancelQuiz, setCancelQuiz] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
+  const [numberQuiz, setNumberQuiz] = useState(0);
 
   // fetch data
-  const { data: questionResponse } = useSWR('/question', url => fetch(url).then(res => res.json()));
-  const questionList = questionResponse?.data || questionData
-  const optionList = get(questionList, 'options', {});
+  const { data: questionResponse } = useSWR(`/quiz/multiple-choice/${id}?number=${numberQuiz}`, fetcher, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+  });
+  const questionList = questionResponse?.data || MOCK_QUESTIONS[numberQuiz];
+  const optionList = get(questionList, 'options', []);
   const question = get(questionList, 'question', '');
   const answer = get(questionList, 'answer', '');
-
-  useEffect(() => {
-    greeting(question, 3);
-  }, [question, greeting]);
-
-  useEffect(() => {
-    if(transcript.includes(answer)){
-      console.log(transcript);
-      setSelectedIndex(validateIndex(questionData));
-    }
-  }, [transcript]);
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
-
-      return () => {
-        clearInterval(timer);
-      };
-    }
-  }, [countdown]);
 
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
@@ -97,6 +83,17 @@ export const MultipleChoicePage = () => {
     setCancelQuiz(true);
   };
 
+  const handleNext = () => {
+    setNumberQuiz((prevPage) => prevPage + 1);
+  };
+
+  const handleResetTimer = () => {
+    setCountdown(20);
+    setSelectedIndex('');
+    setSelectedOption('');
+    // resetTranscript();
+  };
+
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
@@ -112,6 +109,32 @@ export const MultipleChoicePage = () => {
       );
     }
   };
+
+  //TRIGGER EFFECT
+  useEffect(() => {
+    greeting(question, 3);
+  }, [question, greeting]);
+
+  useEffect(() => {
+    if(transcript.includes(answer)){
+      setSelectedIndex(validateIndex(questionData));
+    }
+  }, [transcript]);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+      };
+    } else{
+      handleNext();
+      handleResetTimer();
+    }
+  }, [countdown]);
 
   return (
     <div className="mt-16 h-screen flex flex-col">

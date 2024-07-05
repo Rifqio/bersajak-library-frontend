@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 const useMicrophone = (language = 'id-ID') => {
-  const { transcript, browserSupportsSpeechRecognition } = useSpeechRecognition();
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
 
   useEffect(() => {
     if (browserSupportsSpeechRecognition) {
@@ -14,7 +14,7 @@ const useMicrophone = (language = 'id-ID') => {
     };
   }, [browserSupportsSpeechRecognition, language]);
 
-  return { transcript };
+  return { transcript, resetTranscript };
 };
 
 export default useMicrophone;
