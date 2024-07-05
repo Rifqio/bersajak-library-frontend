@@ -15,7 +15,6 @@ const WordCompletionPage = () => {
   const { transcript } = useMicrophone();
   const { greeting } = useSpeaker();
 
-  const [isMouseMoving, setIsMouseMoving] = useState(false);
   const navigate = useNavigate();
 
   const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
@@ -45,25 +44,7 @@ const WordCompletionPage = () => {
   };
 
   useEffect(() => {
-    let timeoutId;
-
-    const handleMouseMove = () => {
-      setIsMouseMoving(true);
-      console.log('MOUSE GERAK');
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => setIsMouseMoving(false), 3000); 
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
-  useEffect(() => {
-    greeting(question);
+    greeting(question, 2);
   }, [question, greeting]);
 
   return (
