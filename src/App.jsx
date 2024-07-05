@@ -1,8 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import "./App.css";
 import { BookLayout, QuizLayout, DashboardLayout } from "./layout";
 import HomePage from "./pages/home";
-import { BookDetailPage } from "./pages/book";
+import { BookDetailPage, BookViewerPage } from "./pages/book";
 import { MultipleChoicePage, WordCompletionPage } from "./pages/quiz";
 import { Page404 } from "./pages/error";
 
@@ -22,6 +22,16 @@ export const router = createBrowserRouter([
     element: <BookLayout />,
     children: [
       {
+        path: "read",
+        element: <Outlet />,
+        children: [
+          {
+            path: ":id",
+            element: <BookViewerPage />,
+          },
+        ],
+      },
+      {
         path: ":id",
         element: <BookDetailPage />,
       },
@@ -33,11 +43,23 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "multiple-choice",
-        element: <MultipleChoicePage />,
+        element: <Outlet />,
+        children: [
+          {
+            path: ":id",
+            element: <MultipleChoicePage />,
+          },
+        ],
       },
       {
         path: "word-completion",
-        element: <WordCompletionPage />,
+        element: <Outlet />,
+        children: [
+          {
+            path: ":id",
+            element: <WordCompletionPage />,
+          },
+        ],
       },
     ],
   },

@@ -1,3 +1,3 @@
 import BookDetailPage from "./book-detail";
-
-export { BookDetailPage };
+import BookViewerPage from "./book-viewer";
+export { BookDetailPage, BookViewerPage };

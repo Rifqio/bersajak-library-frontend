@@ -18,6 +18,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
+        nunito: ["Nunito", "sans-serif"],
         playfair: ["Playfair Display", "serif"],
         poppins: ["Poppins", "sans-serif"],
         openSans: ["Open Sans", "sans-serif"],

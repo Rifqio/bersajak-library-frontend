@@ -100,7 +100,7 @@ export const MultipleChoicePage = () => {
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
-
+  
   const renderCheckmark = (index) => {
     if (selectedIndex === index) {
       return (
@@ -133,7 +133,7 @@ export const MultipleChoicePage = () => {
       <div className="grid grid-cols-4 gap-4 text-center flex-grow">
         {optionList.map((option, index) => (
           <button
-            key={index}
+            key={option.option}
             onClick={() => onSelectedAnswer(index, option)}
             className="relative w-full rounded-lg flex items-center justify-center h-full cursor-pointer transition-colors duration-300"
             style={{

@@ -14,14 +14,16 @@ export const Navbar = ({ className }) => {
     <nav className={`flex justify-between pb-10 items-center ${className}`}>
       <h1
         onClick={handleNavigate}
-        className="text-xl text-gray-800 font-bold cursor-pointer"
+        className="text-2xl text-[#2B3448] font-poppins tracking-tight font-bold cursor-pointer"
       >
         Bersajak
       </h1>
       <div className="flex items-center">
         <ul className="flex items-center space-x-6">
           <li className="font-semibold text-gray-700">Masuk</li>
-          <Button>Daftar</Button>
+          <Button className="bg-[#EEBE62] text-white font-bold font-nunito text-base hover:bg-[#BF8140]">
+            Daftar
+          </Button>
         </ul>
       </div>
     </nav>

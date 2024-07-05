@@ -1,4 +1,5 @@
 import { Button, Skeleton } from "@/components";
+import { Badge } from "@/components/badge";
 import { Heart, Share2 } from "lucide-react";
 import { useState } from "react";
 
@@ -14,6 +15,7 @@ const BookDetailPage = () => {
     totalRead: 126,
     totalLike: 53,
     rating: 4.5,
+    genre: ["Action", "Sci Fi"],
   };
 
   const generateDescription = (text, bold) => {
@@ -31,7 +33,9 @@ const BookDetailPage = () => {
     <div className="grid grid-cols-2 gap-10 w-full">
       {!isLoaded && <Skeleton className="object-cover h-full rounded-md" />}
       <img
-        className={`object-cover h-full rounded-md drop-shadow-md ${isLoaded ? '' : 'hidden'}`}
+        className={`object-cover h-full rounded-md drop-shadow-md ${
+          isLoaded ? "" : "hidden"
+        }`}
         src="https://unsplash.it/600/400"
         alt="Book Cover"
         onLoad={() => setIsLoaded(true)}
@@ -43,9 +47,17 @@ const BookDetailPage = () => {
         <h1 className="text-2xl pb-4 leading-normal tracking-normal font-semibold font-poppins">
           {book.title.toUpperCase()}
         </h1>
-        <p className="text-sm pb-8 pt-2 text-gray-600 tracking-normal font-normal leading-loose">
+        <p className="text-sm pb-4 pt-2 text-gray-600 tracking-normal font-normal leading-loose">
           {book.description}
         </p>
+
+        <div className="flex flex-row gap-4 pb-8">
+          {book.genre.map((genre) => (
+            <Badge key={genre} variant="primary" className="text-sm">
+              {genre}
+            </Badge>
+          ))}
+        </div>
 
         {/* Book details */}
         <div className="grid grid-cols-2 gap-6">
