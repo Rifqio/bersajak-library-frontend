@@ -1,14 +1,22 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
+import useMicrophone from "@/components/input-voice";
 import { ROUTE } from "@/lib/constants";
 import { MOCK_WORD_COMPLETIONS } from "@/lib/mock";
 import { CancelDialog } from "@/sections/quiz";
-import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import useSpeaker from "@/components/speaker";
 
 const WordCompletionPage = () => {
-  // TODO : To get the question from the URL
+  const { transcript } = useMicrophone();
+  const { greeting } = useSpeaker();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
+  const splitClue = clue.split("");
+  const answerQuiz = answer.split("");
 
   const [countdown, setCountdown] = useState(20);
   const [cancelQuiz, setCancelQuiz] = useState(false);
@@ -25,9 +33,6 @@ const WordCompletionPage = () => {
     }
   }, [countdown]);
 
-  const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
-  const splitClue = clue.split("");
-  
   const handleBackButton = () => {
     setCancelQuiz(true);
   };
@@ -35,6 +40,10 @@ const WordCompletionPage = () => {
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
+
+  useEffect(() => {
+    greeting(question, 1);
+  }, [question]);
 
   return (
     <div className="mt-16 h-screen flex flex-col">
@@ -59,23 +68,40 @@ const WordCompletionPage = () => {
         />
       </div>
       <div className="text-center pt-4">
-        {splitClue.map((letter, index) => (
-          <input
-            key={index}
-            type="text"
-            className="text-center drop-shadow-md w-12 h-12 bg-green-500 text-white font-poppins font-semibold text-2xl rounded-lg mx-2"
-            style={{ border: "none" }}
-            value={letter}
-          />
-        ))}
+        {transcript.includes(answer)
+          ? answerQuiz.map((letter, index) => (
+              <input
+                key={index}
+                type="text"
+                className="text-center drop-shadow-md w-12 h-12 bg-green-500 text-white font-poppins font-semibold text-2xl rounded-lg mx-2"
+                style={{ border: "none" }}
+                value={letter}
+                readOnly
+              />
+            ))
+          : splitClue.map((letter, index) => (
+              <input
+                key={index}
+                type="text"
+                className="text-center drop-shadow-md w-12 h-12 bg-green-500 text-white font-poppins font-semibold text-2xl rounded-lg mx-2"
+                style={{ border: "none" }}
+                value={letter}
+                readOnly
+              />
+            ))}
       </div>
+
       <Button
         onClick={handleBackButton}
         className="bg-red-500 mt-8 hover:bg-red-700 font-poppins font-bold text-white"
       >
         Kembali
       </Button>
-      <CancelDialog onOpen={cancelQuiz} onOpenChange={setCancelQuiz} onCancel={onCancelQuiz} />
+      <CancelDialog
+        onOpen={cancelQuiz}
+        onOpenChange={setCancelQuiz}
+        onCancel={onCancelQuiz}
+      />
     </div>
   );
 };
