@@ -1,40 +1,44 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
-const useSpeaker = () => {
-  const utteranceRef = useRef(null);
-  const countRef = useRef(0);
+const useSpeechSynthesis = () => {
+  const utteranceRef = useRef(new SpeechSynthesisUtterance());
+  const synth = window.speechSynthesis;
 
-  useEffect(() => {
-    utteranceRef.current = new SpeechSynthesisUtterance();
-    return () => {
-      if (utteranceRef.current && speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
-  const greeting = (text, times = 2) => {
-    const synth = window.speechSynthesis;
-    countRef.current = 0;
+  const greeting = (text, perulangan = 2) => {
     utteranceRef.current.text = text;
     utteranceRef.current.rate = 0.8;
     utteranceRef.current.lang = 'id-ID';
 
-    const speakHandler = () => {
-      countRef.current++;
-      if (countRef.current < times) {
+    const speak = () => {
+      if (synth.speaking) {
+        console.error('SpeechSynthesisUtterance sedang berbicara.');
+        return;
+      }
+      for (let i = 0; i < perulangan; i++) {
         synth.speak(utteranceRef.current);
       }
-      const synth = window.speechSynthesis;
-      synth.cancel();
-      countRef.current = 0;
     };
 
-    synth.speak(utteranceRef.current);
-    utteranceRef.current.onend = speakHandler;
+    speak();
   };
 
-  return { greeting };
+  const stopSpeech = () => {
+    if (synth.speaking) {
+      utteranceRef.current.onend = () => {
+        synth.cancel();
+      };
+    } else {
+      synth.cancel();
+    }
+  };
+
+  const playSpeech = () => {
+    if (!synth.speaking && !synth.pending) {
+      synth.speak(utteranceRef.current);
+    }
+  };
+
+  return { greeting, stopSpeech, playSpeech };
 };
 
-export default useSpeaker;
+export default useSpeechSynthesis;

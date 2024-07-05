@@ -14,6 +14,7 @@ import { get } from "lodash";
 import { useParams } from "react-router-dom";
 import fetcher from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 function validateIndex(questionData) {
   const correctAnswer = questionData.answer;
@@ -22,22 +23,20 @@ function validateIndex(questionData) {
   return sanitized;
 }
 
-const questionData = {
-  question: "What is the capital of France?",
-  options: [
-      { option: "A", text: "New York" },
-      { option: "B", text: "London" },
-      { option: "C", text: "Paris" },
-      { option: "D", text: "Dublin" },
-  ],
-  answer: "C",
-};
-
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { transcript } = useMicrophone();
-  const { greeting } = useSpeaker();
+  const { transcript, resetTranscript } = useSpeechRecognition();
+
+  const startListening = () => {
+    SpeechRecognition.startListening({ continuous: true, language : 'id-ID' });
+  };
+
+  const stopListening = () => {
+    SpeechRecognition.stopListening();
+  };
+
+  const { greeting, stopSpeech } = useSpeaker();
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
   const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
   const [countdown, setCountdown] = useState(20);
@@ -55,6 +54,7 @@ export const MultipleChoicePage = () => {
   const optionList = get(questionList, 'options', []);
   const question = get(questionList, 'question', '');
   const answer = get(questionList, 'answer', '');
+  console.log(transcript);
 
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
@@ -87,12 +87,17 @@ export const MultipleChoicePage = () => {
     setNumberQuiz((prevPage) => prevPage + 1);
   };
 
-  const handleResetTimer = () => {
-    setCountdown(20);
-    setSelectedIndex('');
-    setSelectedOption('');
-    // resetTranscript();
+  const handleNextQuiz = () => {  
+    setTimeout(() => {
+      setCountdown(20);
+      setSelectedIndex('');
+      setSelectedOption('');
+      stopListening();
+      handleNext();
+      resetTranscript();
+    }, 3000);
   };
+  
 
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
@@ -110,31 +115,33 @@ export const MultipleChoicePage = () => {
     }
   };
 
-  //TRIGGER EFFECT
-  useEffect(() => {
-    greeting(question, 3);
-  }, [question, greeting]);
-
   useEffect(() => {
     if(transcript.includes(answer)){
-      setSelectedIndex(validateIndex(questionData));
+      setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
     }
   }, [transcript]);
 
   useEffect(() => {
+    let timer;
     if (countdown > 0) {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
-
-      return () => {
-        clearInterval(timer);
-      };
-    } else{
-      handleNext();
-      handleResetTimer();
     }
-  }, [countdown]);
+
+    if (countdown > 10) {
+      greeting(question, 2);
+    } else if (countdown <= 10 && countdown > 0) {
+      stopSpeech();
+      startListening();
+    } else {
+      handleNextQuiz();
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [countdown, startListening, stopSpeech]);
 
   return (
     <div className="mt-16 h-screen flex flex-col">
