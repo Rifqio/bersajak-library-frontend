@@ -24,6 +24,18 @@ function validateIndex(questionData) {
   return sanitized;
 }
 
+function validateTranscript(transcript, questionData) {
+  const sanitized = transcript?.charAt(0);
+  const index = questionData?.options.findIndex(
+    (option) => option.option.charAt(0) === sanitized
+  );
+
+  console.log(sanitized);
+  return index;
+}
+
+
+
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -32,7 +44,7 @@ export const MultipleChoicePage = () => {
   const { greeting, stopSpeech } = useSpeaker();
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
   const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
-  const [countdown, setCountdown] = useState(20);
+  const [countdown, setCountdown] = useState(40);
   const [cancelQuiz, setCancelQuiz] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
@@ -53,7 +65,6 @@ export const MultipleChoicePage = () => {
   const optionList = get(questionList, "options", []);
   const question = get(questionList, "question", "");
   const answer = get(questionList, "answer", "");
-  console.log(transcript);
 
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
@@ -93,12 +104,12 @@ export const MultipleChoicePage = () => {
         setSelectedOption("");
         stopListening();
         resetTranscript();
-        setCountdown(20);
-        onCancelQuiz();
+        setCountdown(40); // Reset countdown ketika semua pertanyaan dijawab
+        onCancelQuiz(); // Kembali ke halaman utama setelah selesai
       }, 3000);
     } else {
       setTimeout(() => {
-        setCountdown(20);
+        setCountdown(40);
         setSelectedIndex("");
         setSelectedOption("");
         stopListening();
@@ -128,6 +139,8 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
+    } else {
+      setSelectedIndex(validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz]));
     }
   }, [transcript]);
 
@@ -139,9 +152,9 @@ export const MultipleChoicePage = () => {
       }, 1000);
     }
 
-    if (countdown > 10) {
+    if (countdown > 20) {
       greeting(question, 2);
-    } else if (countdown <= 10 && countdown > 0) {
+    } else if (countdown <= 20 && countdown > 0) {
       stopSpeech();
       startListening();
     } else {
@@ -161,7 +174,7 @@ export const MultipleChoicePage = () => {
         toastText="Jawaban Anda Benar"
       />
       <Progress
-        value={(countdown / 20) * 100}
+        value={(countdown / 40) * 100}
         className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
       />
       <div className="text-center pb-32">
