@@ -16,8 +16,8 @@ import fetcher from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
 
 function validateIndex(questionData) {
-  const correctAnswer = questionData.answer;
-  const sanitized = questionData.options.findIndex(
+  const correctAnswer = questionData?.answer || '';
+  const sanitized = questionData?.options.findIndex(
     (option) => option.option === correctAnswer
   );
 
@@ -53,7 +53,7 @@ export const MultipleChoicePage = () => {
   const optionList = get(questionList, "options", []);
   const question = get(questionList, "question", "");
   const answer = get(questionList, "answer", "");
-  console.log(totalQuestion);
+  console.log(transcript);
 
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
@@ -87,7 +87,16 @@ export const MultipleChoicePage = () => {
   };
 
   const handleNextQuiz = () => {
-    if (numberQuiz < totalQuestion) {
+    if (numberQuiz >= totalQuestion - 1) {
+      setTimeout(() => {
+        setSelectedIndex("");
+        setSelectedOption("");
+        stopListening();
+        resetTranscript();
+        setCountdown(20);
+        onCancelQuiz();
+      }, 3000);
+    } else {
       setTimeout(() => {
         setCountdown(20);
         setSelectedIndex("");
@@ -98,6 +107,7 @@ export const MultipleChoicePage = () => {
       }, 3000);
     }
   };
+  
 
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
