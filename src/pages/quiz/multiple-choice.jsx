@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
-import { MOCK_QUESTIONS } from "@/lib/mock";
 import { CancelDialog } from "@/sections/quiz";
 import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import Toastify from "@/components/toast";
 import useSpeaker from "@/components/speaker";
 import useMicrophone from "@/components/input-voice";
+import useSWR from "swr";
+import { get } from "lodash";
 
 function validateIndex(questionData) {
   const correctAnswer = questionData.answer;
@@ -32,13 +33,19 @@ export const MultipleChoicePage = () => {
   const navigate = useNavigate();
   const { transcript } = useMicrophone();
   const { greeting } = useSpeaker();
-  const { question, options, answer } = MOCK_QUESTIONS[0];
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
   const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
   const [countdown, setCountdown] = useState(20);
   const [cancelQuiz, setCancelQuiz] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
+
+  // fetch data
+  const { data: questionResponse } = useSWR('/question', url => fetch(url).then(res => res.json()));
+  const questionList = questionResponse?.data || questionData
+  const optionList = get(questionList, 'options', {});
+  const question = get(questionList, 'question', '');
+  const answer = get(questionList, 'answer', '');
 
   useEffect(() => {
     greeting(question, 3);
@@ -124,7 +131,7 @@ export const MultipleChoicePage = () => {
       </div>
 
       <div className="grid grid-cols-4 gap-4 text-center flex-grow">
-        {options.map((option, index) => (
+        {optionList.map((option, index) => (
           <button
             key={index}
             onClick={() => onSelectedAnswer(index, option)}
