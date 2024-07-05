@@ -6,7 +6,6 @@ import { CancelDialog } from "@/sections/quiz";
 import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Toastify from "@/components/toast";
 import useSpeaker from "@/components/speaker";
 import useMicrophone from "@/components/input-voice";
 import useSWR from "swr";
@@ -14,6 +13,9 @@ import { get } from "lodash";
 import { useParams } from "react-router-dom";
 import fetcher from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function validateIndex(questionData) {
   const correctAnswer = questionData?.answer || '';
@@ -49,6 +51,7 @@ export const MultipleChoicePage = () => {
   const [selectedIndex, setSelectedIndex] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
   const [numberQuiz, setNumberQuiz] = useState(0);
+  const [score, setScore] = useState(0);
 
   // fetch data
   const { data: questionResponse } = useSWR(
@@ -104,8 +107,8 @@ export const MultipleChoicePage = () => {
         setSelectedOption("");
         stopListening();
         resetTranscript();
-        setCountdown(40); // Reset countdown ketika semua pertanyaan dijawab
-        onCancelQuiz(); // Kembali ke halaman utama setelah selesai
+        setCountdown(40);
+        onCancelQuiz();
       }, 3000);
     } else {
       setTimeout(() => {
@@ -115,6 +118,9 @@ export const MultipleChoicePage = () => {
         stopListening();
         handleNext();
         resetTranscript();
+        toast.success(`skor anda adalah ${score}`, {
+          position: 'top-center',
+        });
       }, 3000);
     }
   };
@@ -139,6 +145,7 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
+      setScore(prevScore => prevScore + 20);
     } else {
       setSelectedIndex(validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz]));
     }
@@ -168,11 +175,7 @@ export const MultipleChoicePage = () => {
 
   return (
     <div className="mt-16 h-screen flex flex-col">
-      <Toastify
-        transcript={selectedOption || transcript}
-        answer={answer}
-        toastText="Jawaban Anda Benar"
-      />
+      <ToastContainer />
       <Progress
         value={(countdown / 40) * 100}
         className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
