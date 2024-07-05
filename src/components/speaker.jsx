@@ -13,21 +13,22 @@ const useSpeaker = () => {
     };
   }, []);
 
-  const greeting = (text, times = 1) => {
+  const greeting = (text, times = 2) => {
     const synth = window.speechSynthesis;
+    countRef.current = 0;
     utteranceRef.current.text = text;
     utteranceRef.current.lang = 'id-ID';
 
-    utteranceRef.current.onend = () => {
+    const speakHandler = () => {
       countRef.current++;
       if (countRef.current < times) {
         synth.speak(utteranceRef.current);
-      } else {
-        countRef.current = 0;
       }
     };
 
+    synth.cancel();
     synth.speak(utteranceRef.current);
+    utteranceRef.current.onend = speakHandler;
   };
 
   return { greeting };

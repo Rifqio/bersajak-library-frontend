@@ -1,17 +1,16 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import useMicrophone from "@/components/input-voice";
 import { ROUTE } from "@/lib/constants";
 import { MOCK_WORD_COMPLETIONS } from "@/lib/mock";
 import { CancelDialog } from "@/sections/quiz";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useSpeaker from "@/components/speaker";
 
 const WordCompletionPage = () => {
   const { transcript } = useMicrophone();
   const { greeting } = useSpeaker();
-  const [searchParams] = useSearchParams();
+  // const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
@@ -42,8 +41,8 @@ const WordCompletionPage = () => {
   };
 
   useEffect(() => {
-    greeting(question, 1);
-  }, [question]);
+    greeting(question, 2);
+  }, [question, greeting]);
 
   return (
     <div className="mt-16 h-screen flex flex-col">
