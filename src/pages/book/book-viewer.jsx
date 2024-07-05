@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import fetcher from "@/lib/fetcher";
-import useSWR from "swr";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import { useSwr } from "@/lib/swr";
 
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 const BookViewerPage = () => {
@@ -12,10 +12,7 @@ const BookViewerPage = () => {
   const [page, setPage] = useState(1);
   const [pdfData, setPdfData] = useState("");
 
-  const { data, error } = useSWR(`/book/${id}?page=${page}`, fetcher, {
-    shouldRetryOnError: false,
-    revalidateOnFocus: false,
-  });
+  const { data, error } = useSwr(`/book/${id}?page=${page}`, fetcher);
 
   useEffect(() => {
     if (data) {
@@ -37,23 +34,18 @@ const BookViewerPage = () => {
   if (!pdfData) return <div>Loading...</div>;
 
   return (
-    <div className="flex space-x-4 overflow-x-auto">
+    <div className="flex space-x-4 text-center overflow-x-auto">
+      {page > 1 && <button onClick={handlePrevious}>Previous</button>}
       <Document
         className="flex"
-        file={`data:application/pdf;base64,${pdfData}`}
+        file={`data:application/pdf;base64,${pdfData.data}`}
       >
         <Page pageNumber={1} />
         <Page pageNumber={2} />
       </Document>
-      {page > 1 && (
-        <button
-          onClick={handlePrevious}
-          className="mx-2 px-4 py-2 bg-gray-200 hover:bg-gray-300"
-        >
-          Previous
-        </button>
+      {pdfData.pagination.currentPage <= pdfData.pagination.totalPages && (
+        <button onClick={handleNext}>Next</button>
       )}
-      <button onClick={handleNext}>Next</button>
     </div>
   );
 };

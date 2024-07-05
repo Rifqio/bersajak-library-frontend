@@ -8,8 +8,7 @@ import { CancelDialog } from "@/sections/quiz";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import Toastify from "@/components/toast";
-import useSpeaker from "@/components/speaker";
-import useMicrophone from "@/components/input-voice";
+import { useSpeaker, useMicrophone } from "@/hooks";
 
 const WordCompletionPage = () => {
   const { transcript } = useMicrophone();

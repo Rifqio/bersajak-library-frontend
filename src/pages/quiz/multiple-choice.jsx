@@ -5,21 +5,18 @@ import { ROUTE } from "@/lib/constants";
 import { CancelDialog } from "@/sections/quiz";
 import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import useSpeaker from "@/components/speaker";
-import useMicrophone from "@/components/input-voice";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSpeaker, useMicrophone } from "@/hooks";
 import useSWR from "swr";
 import { get } from "lodash";
-import { useParams } from "react-router-dom";
 import fetcher from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ScoreDialog from "@/sections/quiz/score-dialog";
 
-
 function validateIndex(questionData) {
-  const correctAnswer = questionData?.answer || '';
+  const correctAnswer = questionData?.answer || "";
   const sanitized = questionData?.options.findIndex(
     (option) => option.option === correctAnswer
   );
@@ -37,12 +34,11 @@ function validateTranscript(transcript, questionData) {
   return index;
 }
 
-
-
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { transcript, resetTranscript, startListening, stopListening } = useMicrophone();
+  const { transcript, resetTranscript, startListening, stopListening } =
+    useMicrophone();
 
   const { greeting, stopSpeech } = useSpeaker();
   const optionsColors = ["#2971B0", "#63CACA", "#EFAB26", "#D6536D"];
@@ -120,12 +116,11 @@ export const MultipleChoicePage = () => {
         handleNext();
         resetTranscript();
         toast.success(`skor anda adalah ${score}`, {
-          position: 'top-center',
+          position: "top-center",
         });
       }, 3000);
     }
   };
-  
 
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
@@ -146,9 +141,11 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
-      setScore(prevScore => prevScore + (100/totalQuestion));
+      setScore((prevScore) => prevScore + 100 / totalQuestion);
     } else {
-      setSelectedIndex(validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz]));
+      setSelectedIndex(
+        validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz])
+      );
     }
   }, [transcript]);
 
@@ -222,11 +219,7 @@ export const MultipleChoicePage = () => {
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
       />
-      <ScoreDialog
-        onOpen={isShowScore}
-        onCancel={onCancelQuiz}
-        score={score}
-      />
+      <ScoreDialog onOpen={isShowScore} onCancel={onCancelQuiz} score={score} />
     </div>
   );
 };

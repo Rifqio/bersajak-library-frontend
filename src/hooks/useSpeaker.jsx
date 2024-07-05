@@ -1,17 +1,17 @@
-import { useRef } from 'react';
+import { useRef } from "react";
 
-const useSpeechSynthesis = () => {
+const useSpeaker = () => {
   const utteranceRef = useRef(new SpeechSynthesisUtterance());
   const synth = window.speechSynthesis;
 
   const greeting = (text, perulangan = 2) => {
     utteranceRef.current.text = text;
     utteranceRef.current.rate = 0.8;
-    utteranceRef.current.lang = 'id-ID';
+    utteranceRef.current.lang = "id-ID";
 
     const speak = () => {
       if (synth.speaking) {
-        console.error('SpeechSynthesisUtterance sedang berbicara.');
+        console.error("SpeechSynthesisUtterance sedang berbicara.");
         return;
       }
       for (let i = 0; i < perulangan; i++) {
@@ -41,4 +41,4 @@ const useSpeechSynthesis = () => {
   return { greeting, stopSpeech, playSpeech };
 };
 
-export default useSpeechSynthesis;
+export default useSpeaker;
