@@ -15,6 +15,7 @@ import fetcher from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ScoreDialog from "@/sections/quiz/score-dialog";
 
 
 function validateIndex(questionData) {
@@ -48,6 +49,7 @@ export const MultipleChoicePage = () => {
   const hoverColors = ["#14417E", "#318091", "#AC6D13", "#9A2955"];
   const [countdown, setCountdown] = useState(40);
   const [cancelQuiz, setCancelQuiz] = useState(false);
+  const [isShowScore, setIsShowScore] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
   const [numberQuiz, setNumberQuiz] = useState(0);
@@ -107,8 +109,7 @@ export const MultipleChoicePage = () => {
         setSelectedOption("");
         stopListening();
         resetTranscript();
-        setCountdown(40);
-        onCancelQuiz();
+        setIsShowScore(true);
       }, 3000);
     } else {
       setTimeout(() => {
@@ -145,7 +146,7 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
-      setScore(prevScore => prevScore + 20);
+      setScore(prevScore => prevScore + (100/totalQuestion));
     } else {
       setSelectedIndex(validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz]));
     }
@@ -220,6 +221,11 @@ export const MultipleChoicePage = () => {
         onOpen={cancelQuiz}
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
+      />
+      <ScoreDialog
+        onOpen={isShowScore}
+        onCancel={onCancelQuiz}
+        score={score}
       />
     </div>
   );
