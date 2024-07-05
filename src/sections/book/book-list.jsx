@@ -11,7 +11,7 @@ const BookList = ({ id, title, author, imageUrl }) => {
   };
 
   const trimmedTitle = () => {
-    if (title.length > 10) {
+    if (title.length > 20) {
       return title.substring(0, 10) + "...";
     }
     return title;
@@ -20,7 +20,7 @@ const BookList = ({ id, title, author, imageUrl }) => {
   return (
     <Card
       onClick={handleNavigate}
-      className="w-[300px] h-[450px] cursor-pointer flex flex-col"
+      className="w-[250px] h-[400px] cursor-pointer flex flex-col bg-white shadow-md transition-transform transform hover:scale-105"
     >
       <div
         className="w-full h-3/4 bg-cover bg-center"

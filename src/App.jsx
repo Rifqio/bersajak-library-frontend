@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import "./App.css";
 import { BookLayout, QuizLayout, DashboardLayout } from "./layout";
 import HomePage from "./pages/home";
@@ -33,11 +33,23 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "multiple-choice",
-        element: <MultipleChoicePage />,
+        element: <Outlet />,
+        children: [
+          {
+            path: ":id",
+            element: <MultipleChoicePage />,
+          },
+        ],
       },
       {
         path: "word-completion",
-        element: <WordCompletionPage />,
+        element: <Outlet />,
+        children: [
+          {
+            path: ":id",
+            element: <WordCompletionPage />,
+          },
+        ],
       },
     ],
   },
