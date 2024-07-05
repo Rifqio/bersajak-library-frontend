@@ -60,7 +60,7 @@ export const MultipleChoicePage = () => {
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
-
+  
   const renderCheckmark = (index) => {
     if (selectedIndex === index) {
       return (

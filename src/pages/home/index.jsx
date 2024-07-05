@@ -35,6 +35,10 @@ const HomePage = () => {
         <h1 className="text-center font-bold tracking-tighter text-3xl">
           Mau baca buku apa hari ini?
         </h1>
+        <p className="text-center text-gray-600 mt-2">
+          Pariatur laborum veniam irure id Lorem id dolor magna pariatur dolore
+          deserunt. Adipisicing ullamco anim nisi exercitation Lorem exercitation
+          sit anim sunt. </p>
         <div className="mt-8 grid grid-cols-4 gap-2">
           {MOCK_BOOK_LIST.map((book) => (
             <BookList

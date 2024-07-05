@@ -2,7 +2,7 @@ import { createBrowserRouter, Outlet } from "react-router-dom";
 import "./App.css";
 import { BookLayout, QuizLayout, DashboardLayout } from "./layout";
 import HomePage from "./pages/home";
-import { BookDetailPage } from "./pages/book";
+import { BookDetailPage, BookViewerPage } from "./pages/book";
 import { MultipleChoicePage, WordCompletionPage } from "./pages/quiz";
 import { Page404 } from "./pages/error";
 
@@ -21,6 +21,16 @@ export const router = createBrowserRouter([
     path: "book",
     element: <BookLayout />,
     children: [
+      {
+        path: "read",
+        element: <Outlet />,
+        children: [
+          {
+            path: ":id",
+            element: <BookViewerPage />,
+          },
+        ],
+      },
       {
         path: ":id",
         element: <BookDetailPage />,

@@ -4,8 +4,8 @@ import { Outlet } from "react-router-dom";
 const BookLayout = () => {
   return (
     <>
-      <Navbar className="px-20 py-10 bg-white" />
-      <div className="min-h-screen bg-background_1 px-20">
+      <div className="min-h-screen bg-gradient-to-t from-white to-pink-50 px-20">
+        <Navbar className="pt-10" />
         <Outlet />
       </div>
     </>
