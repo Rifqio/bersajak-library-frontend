@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import useMicrophone from "@/components/input-voice";
@@ -5,12 +7,15 @@ import { ROUTE } from "@/lib/constants";
 import { MOCK_WORD_COMPLETIONS } from "@/lib/mock";
 import { CancelDialog } from "@/sections/quiz";
 import { useNavigate } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
+import Toastify from "@/components/toast";
 import useSpeaker from "@/components/speaker";
 
 const WordCompletionPage = () => {
   const { transcript } = useMicrophone();
   const { greeting } = useSpeaker();
-  // const [searchParams] = useSearchParams();
+
+  const [isMouseMoving, setIsMouseMoving] = useState(false);
   const navigate = useNavigate();
 
   const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
@@ -25,7 +30,6 @@ const WordCompletionPage = () => {
       const timer = setInterval(() => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
-
       return () => {
         clearInterval(timer);
       };
@@ -41,7 +45,25 @@ const WordCompletionPage = () => {
   };
 
   useEffect(() => {
-    greeting(question, 2);
+    let timeoutId;
+
+    const handleMouseMove = () => {
+      setIsMouseMoving(true);
+      console.log('MOUSE GERAK');
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setIsMouseMoving(false), 3000); 
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  useEffect(() => {
+    greeting(question);
   }, [question, greeting]);
 
   return (
@@ -49,6 +71,11 @@ const WordCompletionPage = () => {
       <Progress
         value={(countdown / 20) * 100}
         className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
+      />
+      <Toastify
+        transcript={transcript}
+        answer={answer}
+        toastText="Jawaban Anda Benar"
       />
       <div className="text-center pb-4">
         <h1 className="text-4xl text-white font-poppins font-medium">

@@ -69,13 +69,13 @@ export const MOCK_QUESTIONS = [
 
 export const MOCK_WORD_COMPLETIONS = [
   {
-    question: "The capital of France is?",
+    question: "Ibukota Perancis adalah?",
     clue: "P___S",
     imageUrl: "https://unsplash.it/640/425?paris",
     answer: "Paris",
   },
   {
-    question: "The capital of Spain is?",
+    question: "Ibukota Spanyol adalah?",
     clue: "M_d__d",
     imageUrl: "https://unsplash.it/640/425?spain",
     answer: "Madrid",
