@@ -88,6 +88,9 @@ export const MultipleChoicePage = () => {
   const onSelectedAnswer = (index, value) => {
     setSelectedIndex(index);
     setSelectedOption(value.option);
+    if(value.option === answer){
+      setScore((prevScore) => prevScore + (100 / totalQuestion));
+    }
   };
 
   const handleBackButton = () => {
@@ -141,7 +144,7 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
-      setScore((prevScore) => prevScore + 100 / totalQuestion);
+      setScore((prevScore) => prevScore + (100 / totalQuestion));
     } else {
       setSelectedIndex(
         validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz])
