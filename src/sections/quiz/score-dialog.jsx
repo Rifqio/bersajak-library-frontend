@@ -10,7 +10,7 @@ import {
   import PropTypes from "prop-types";
   
   const ScoreDialog = ({ onOpen, onBack, score }) => {
-    const roundedScore = score.toFixed(0);
+    const roundedScore = score.toFixed(1);
     return (
       <Dialog open={onOpen}>
         <DialogContent className="font-poppins">

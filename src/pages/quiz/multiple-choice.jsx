@@ -102,6 +102,7 @@ export const MultipleChoicePage = () => {
   };
 
   const handleNextQuiz = () => {
+    const roundedScore = score.toFixed(1);
     if (numberQuiz >= totalQuestion - 1) {
       setTimeout(() => {
         setSelectedIndex("");
@@ -118,7 +119,7 @@ export const MultipleChoicePage = () => {
         stopListening();
         handleNext();
         resetTranscript();
-        toast.success(`skor anda adalah ${score}`, {
+        toast.success(`skor anda adalah ${roundedScore}`, {
           position: "top-center",
         });
       }, 3000);
