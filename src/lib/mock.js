@@ -80,6 +80,12 @@ export const MOCK_WORD_COMPLETIONS = [
     imageUrl: "https://unsplash.it/640/425?spain",
     answer: "Madrid",
   },
+  {
+    question: "Ibukota Portugal adalah?",
+    clue: "L_s__n",
+    imageUrl: "https://unsplash.it/640/425?spain",
+    answer: "Lisbon",
+  },
 ];
 
 export const MOCK_BOOK_LIST = [

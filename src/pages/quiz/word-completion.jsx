@@ -18,57 +18,36 @@ import ScoreDialog from "@/sections/quiz/score-dialog";
 
 const WordCompletionPage = () => {
   const { id } = useParams();
-  const { transcript, startListening, stopListening } = useMicrophone();
+  const { transcript, startListening, stopListening, resetTranscript } = useMicrophone();
   const { greeting, stopSpeech } = useSpeaker();
   const navigate = useNavigate();
 
+  const [countdown, setCountdown] = useState(20);
   const [numberQuiz, setNumberQuiz] = useState(0);
   const [score, setScore] = useState(0);
   const [isShowScore, setIsShowScore] = useState(false);
-
-  const { imageUrl, clue } = MOCK_WORD_COMPLETIONS[0];
-    // fetch data
-    const { data: questionResponse } = useSwr(
-      `/quiz/word-completion/${id}?number=${numberQuiz}`,
-      fetcher,
-      {
-        shouldRetryOnError: false,
-        revalidateOnFocus: false,
-      }
-    );
-    const questionList = questionResponse?.data || MOCK_WORD_COMPLETIONS[numberQuiz];
-    const totalQuestion =
-      questionResponse?.data?.totalCount || MOCK_WORD_COMPLETIONS.length;
-    const question = get(questionList, "question", "");
-    const answer = get(questionList, "answer", "");
-  const splitClue = clue.split("");
-  console.log(questionList)
-  const answerQuiz = answer.split("");
-
-  const [countdown, setCountdown] = useState(20);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
-  useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
+  const { imageUrl } = MOCK_WORD_COMPLETIONS[0];
+  // fetch data
+  const { data: questionResponse } = useSwr(
+    `/quiz/word-completion/${id}?number=${numberQuiz}`,
+    fetcher,
+    {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
     }
-
-    if (countdown > 20) {
-      greeting(question, 2);
-    } else if (countdown <= 20 && countdown > 0) {
-      stopSpeech();
-      startListening();
-    } else {
-      handleNextQuiz();
-    }
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [countdown, startListening, stopSpeech]);
+  );
+  const questionList =
+    questionResponse?.data || MOCK_WORD_COMPLETIONS[numberQuiz];
+  const totalQuestion =
+    questionResponse?.data?.totalCount || MOCK_WORD_COMPLETIONS.length;
+  const question = get(questionList, "question", "");
+  const answer = get(questionList, "answer", "");
+  const clue = get(questionList, "clue", "");
+  const splitClue = clue.split("").map(letter => letter.toUpperCase());
+  const answerQuiz = answer.split("");
+  console.log(transcript);
 
   const handleBackButton = () => {
     setCancelQuiz(true);
@@ -86,11 +65,15 @@ const WordCompletionPage = () => {
     const roundedScore = score.toFixed(1);
     if (numberQuiz >= totalQuestion - 1) {
       setTimeout(() => {
+        stopListening();
+        resetTranscript();
         setIsShowScore(true);
       }, 3000);
     } else {
       setTimeout(() => {
-        setCountdown(40);
+        setCountdown(20);
+        stopListening();
+        resetTranscript();
         handleNext();
         toast.success(`skor anda adalah ${roundedScore}`, {
           position: "top-center",
@@ -98,6 +81,28 @@ const WordCompletionPage = () => {
       }, 3000);
     }
   };
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+    }
+
+    if (countdown > 10) {
+      greeting(question, 2);
+    } else if (countdown <= 10 && countdown > 0) {
+      stopSpeech();
+      startListening();
+    } else {
+      handleNextQuiz();
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [countdown, startListening, stopSpeech]);
 
   return (
     <div className="mt-16 h-screen flex flex-col">
@@ -128,7 +133,7 @@ const WordCompletionPage = () => {
         />
       </div>
       <div className="text-center pt-4">
-        {transcript.includes(answer)
+        {transcript.includes(answer.toUpperCase())
           ? answerQuiz.map((letter, index) => (
               <input
                 key={index}
