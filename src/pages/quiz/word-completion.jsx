@@ -1,5 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useSpeaker, useMicrophone } from "@/hooks";
+import { useSwr } from "@/lib/swr";
+import { useParams } from "react-router-dom";
+import fetcher from "@/lib/fetcher";
+import { get } from "lodash";
 import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
@@ -8,46 +13,95 @@ import { CancelDialog } from "@/sections/quiz";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import Toastify from "@/components/toast";
-import { useSpeaker, useMicrophone } from "@/hooks";
+import { ToastContainer, toast } from "react-toastify";
+import ScoreDialog from "@/sections/quiz/score-dialog";
 
 const WordCompletionPage = () => {
-  const { transcript } = useMicrophone();
-  const { greeting } = useSpeaker();
-
+  const { id } = useParams();
+  const { transcript, startListening, stopListening } = useMicrophone();
+  const { greeting, stopSpeech } = useSpeaker();
   const navigate = useNavigate();
 
-  const { question, imageUrl, answer, clue } = MOCK_WORD_COMPLETIONS[0];
+  const [numberQuiz, setNumberQuiz] = useState(0);
+  const [score, setScore] = useState(0);
+  const [isShowScore, setIsShowScore] = useState(false);
+
+  const { imageUrl, clue } = MOCK_WORD_COMPLETIONS[0];
+    // fetch data
+    const { data: questionResponse } = useSwr(
+      `/quiz/word-completion/${id}?number=${numberQuiz}`,
+      fetcher,
+      {
+        shouldRetryOnError: false,
+        revalidateOnFocus: false,
+      }
+    );
+    const questionList = questionResponse?.data || MOCK_WORD_COMPLETIONS[numberQuiz];
+    const totalQuestion =
+      questionResponse?.data?.totalCount || MOCK_WORD_COMPLETIONS.length;
+    const question = get(questionList, "question", "");
+    const answer = get(questionList, "answer", "");
   const splitClue = clue.split("");
+  console.log(questionList)
   const answerQuiz = answer.split("");
 
   const [countdown, setCountdown] = useState(20);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
   useEffect(() => {
+    let timer;
     if (countdown > 0) {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
-      return () => {
-        clearInterval(timer);
-      };
     }
-  }, [countdown]);
+
+    if (countdown > 20) {
+      greeting(question, 2);
+    } else if (countdown <= 20 && countdown > 0) {
+      stopSpeech();
+      startListening();
+    } else {
+      handleNextQuiz();
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [countdown, startListening, stopSpeech]);
 
   const handleBackButton = () => {
     setCancelQuiz(true);
+  };
+
+  const handleNext = () => {
+    setNumberQuiz((prevPage) => prevPage + 1);
   };
 
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
 
-  useEffect(() => {
-    greeting(question, 2);
-  }, [question, greeting]);
+  const handleNextQuiz = () => {
+    const roundedScore = score.toFixed(1);
+    if (numberQuiz >= totalQuestion - 1) {
+      setTimeout(() => {
+        setIsShowScore(true);
+      }, 3000);
+    } else {
+      setTimeout(() => {
+        setCountdown(40);
+        handleNext();
+        toast.success(`skor anda adalah ${roundedScore}`, {
+          position: "top-center",
+        });
+      }, 3000);
+    }
+  };
 
   return (
     <div className="mt-16 h-screen flex flex-col">
+      <ToastContainer />
       <Progress
         value={(countdown / 20) * 100}
         className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
@@ -108,6 +162,7 @@ const WordCompletionPage = () => {
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
       />
+       <ScoreDialog onOpen={isShowScore} onCancel={onCancelQuiz} score={score} />
     </div>
   );
 };
