@@ -70,14 +70,16 @@ const WordCompletionPage = () => {
         setIsShowScore(true);
       }, 3000);
     } else {
+      toast.success(`skor anda adalah ${roundedScore}`, {
+        position: "top-center",
+        autoClose: 1000,
+        pauseOnHover: false,
+      });      
       setTimeout(() => {
         setCountdown(20);
         stopListening();
         resetTranscript();
         handleNext();
-        toast.success(`skor anda adalah ${roundedScore}`, {
-          position: "top-center",
-        });
       }, 3000);
     }
   };

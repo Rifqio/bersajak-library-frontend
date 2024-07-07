@@ -112,6 +112,11 @@ export const MultipleChoicePage = () => {
         setIsShowScore(true);
       }, 3000);
     } else {
+      toast.success(`skor anda adalah ${roundedScore}`, {
+        position: "top-center",
+        autoClose: 1000,
+        pauseOnHover: false,
+      }); 
       setTimeout(() => {
         setCountdown(40);
         setSelectedIndex("");
@@ -119,9 +124,6 @@ export const MultipleChoicePage = () => {
         stopListening();
         handleNext();
         resetTranscript();
-        toast.success(`skor anda adalah ${roundedScore}`, {
-          position: "top-center",
-        });
       }, 3000);
     }
   };
