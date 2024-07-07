@@ -12,7 +12,6 @@ import { MOCK_WORD_COMPLETIONS } from "@/lib/mock";
 import { CancelDialog } from "@/sections/quiz";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
-import Toastify from "@/components/toast";
 import { ToastContainer, toast } from "react-toastify";
 import ScoreDialog from "@/sections/quiz/score-dialog";
 
@@ -47,7 +46,6 @@ const WordCompletionPage = () => {
   const clue = get(questionList, "clue", "");
   const splitClue = clue.split("").map(letter => letter.toUpperCase());
   const answerQuiz = answer.split("");
-  console.log(transcript);
 
   const handleBackButton = () => {
     setCancelQuiz(true);
@@ -70,7 +68,7 @@ const WordCompletionPage = () => {
         setIsShowScore(true);
       }, 3000);
     } else {
-      toast.success(`skor anda adalah ${roundedScore}`, {
+      toast.success(`Skor anda adalah ${roundedScore}`, {
         position: "top-center",
         autoClose: 1000,
         pauseOnHover: false,
@@ -112,11 +110,6 @@ const WordCompletionPage = () => {
       <Progress
         value={(countdown / 20) * 100}
         className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
-      />
-      <Toastify
-        transcript={transcript}
-        answer={answer}
-        toastText="Jawaban Anda Benar"
       />
       <div className="text-center pb-4">
         <h1 className="text-4xl text-white font-poppins font-medium">
@@ -169,7 +162,7 @@ const WordCompletionPage = () => {
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
       />
-       <ScoreDialog onOpen={isShowScore} onCancel={onCancelQuiz} score={score} />
+      <ScoreDialog onOpen={isShowScore} onCancel={onCancelQuiz} score={score} />
     </div>
   );
 };
