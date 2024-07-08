@@ -82,6 +82,17 @@ const WordCompletionPage = () => {
     }
   };
 
+  const validateAnswer = (transcript, questionData) => {
+    if (transcript && questionData && questionData.answer) {
+      const sanitized = transcript.charAt(0).toUpperCase();
+      console.log(questionData.answer.toUpperCase());
+      console.log(sanitized);
+      if (questionData.answer.toUpperCase() === sanitized) {
+        setScore((prevScore) => prevScore + (100 / totalQuestion));
+      }
+    }
+  }  
+
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -103,6 +114,19 @@ const WordCompletionPage = () => {
       clearInterval(timer);
     };
   }, [countdown, startListening, stopSpeech]);
+
+  
+  useEffect(() => {
+    if (transcript && MOCK_WORD_COMPLETIONS[numberQuiz] && MOCK_WORD_COMPLETIONS[numberQuiz].answer) {
+      const sanitizedTranscript = transcript.toUpperCase();
+      const sanitizedAnswer = MOCK_WORD_COMPLETIONS[numberQuiz].answer.toUpperCase();
+
+      if (sanitizedTranscript.includes(sanitizedAnswer)) {
+        setScore((prevScore) => prevScore + (100 / totalQuestion));
+      }
+    }
+  }, [transcript, numberQuiz, setScore, totalQuestion]);
+  
 
   return (
     <div className="mt-16 h-screen flex flex-col">

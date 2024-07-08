@@ -30,7 +30,6 @@ function validateTranscript(transcript, questionData) {
     (option) => option.option.charAt(0) === sanitized
   );
 
-  console.log(sanitized);
   return index;
 }
 
