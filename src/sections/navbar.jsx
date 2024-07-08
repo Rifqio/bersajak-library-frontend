@@ -49,7 +49,7 @@ export const Navbar = ({ className }) => {
       </div>
       <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
         <ul className="px-2 pt-2 pb-3 space-y-2 sm:px-3">
-          <Button className="font-semibold w-full text-white font-bold font-nunito">
+          <Button className="w-full text-white font-bold font-nunito">
             Masuk
           </Button>
           <Button className="bg-[#EEBE62] text-white font-bold font-nunito text-base hover:bg-[#BF8140] w-full text-center">

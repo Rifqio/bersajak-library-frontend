@@ -2,8 +2,25 @@ import BookList from "@/sections/book/book-list";
 import BooksIllustration from "../../assets/books.svg";
 import { MOCK_BOOK_LIST } from "@/lib/mock";
 import { Button } from "@/components";
+import { useState } from "react";
+import { ModalSound } from "@/sections/home/modal-sound";
+import { useAudioStore } from "@/zustand";
+import { Volume2, VolumeX } from "lucide-react";
 
 const HomePage = () => {
+  const [soundModal, setSoundModal] = useState(false);
+  const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
+
+  const onEnableAudio = () => {
+    setIsAudioEnabled(true);
+    setSoundModal(false);
+  };
+
+  const onDisabledAudio = () => {
+    setIsAudioEnabled(false);
+    setSoundModal(false);
+  };
+
   const heroSection = () => {
     return (
       <div className="relative flex flex-col md:flex-row justify-between">
@@ -63,6 +80,18 @@ const HomePage = () => {
     <>
       {heroSection()}
       {bookListSection()}
+      <Button
+        onClick={() => setSoundModal(true)}
+        className="fixed bottom-14 left-5 z-30 rounded-full w-14 h-14"
+      >
+        {isAudioEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
+      </Button>
+      <ModalSound
+        onOpen={firstVisit || soundModal}
+        onEnableAudio={onEnableAudio}
+        onOpenChange={setSoundModal}
+        onDisabledAudio={onDisabledAudio}
+      />
     </>
   );
 };
