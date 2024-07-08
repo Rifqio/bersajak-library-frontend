@@ -39,9 +39,8 @@ const PrestartQuizPage = () => {
     };
   }, [countdown, startListening, stopSpeech]);
 
-  console.log(transcript);
   useEffect(() => {
-    if (transcript.includes("MULAI")) {
+    if (transcript.includes("MULAI" || "SIAP")) {
       HandleStartQuiz();
     }
   }, [transcript]);
@@ -58,12 +57,12 @@ const PrestartQuizPage = () => {
         </h1>
       </div>
       <div className="flex justify-center items-center pb-4 pt-4">
-        FLOW HERE
+        TODO IMAGE PRE QUIZ
       </div>
 
       <Button
         onClick={HandleStartQuiz}
-        className="bg-red-500 mt-8 hover:bg-red-700 font-poppins font-bold text-white"
+        className="bg-red-500 mt-20 hover:bg-red-700 font-poppins font-bold text-white"
       >
         Mulai
       </Button>
