@@ -4,19 +4,19 @@ export const MOCK_QUESTIONS = [
     options: [
       {
         option: "A",
-        text: "New York",
+        text: "A. New York",
       },
       {
         option: "B",
-        text: "London",
+        text: "B. London",
       },
       {
         option: "C",
-        text: "Paris",
+        text: "C. Paris",
       },
       {
         option: "D",
-        text: "Dublin",
+        text: "D. Dublin",
       },
     ],
     answer: "C",

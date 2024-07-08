@@ -162,9 +162,15 @@ export const MultipleChoicePage = () => {
       }, 1000);
     }
 
+    const optionTexts = optionList.map(option => option.text).join(' ');
     if (countdown > 20) {
-      greeting(question, 2);
-    } else if (countdown <= 20 && countdown > 0) {
+      greeting(question, 1);
+
+    } 
+    else if (countdown >10) {
+      greeting(optionTexts, 1);
+    }
+    else if (countdown <= 20 && countdown > 0) {
       stopSpeech();
       startListening();
     } else {
