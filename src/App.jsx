@@ -5,6 +5,7 @@ import HomePage from "./pages/home";
 import { BookDetailPage, BookViewerPage } from "./pages/book";
 import { MultipleChoicePage, WordCompletionPage } from "./pages/quiz";
 import { Page404 } from "./pages/error";
+import PresStartQuizPage from "./pages/quiz/prestart-quiz";
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
         element: <Outlet />,
         children: [
           {
+            path: "",
+            element: <PresStartQuizPage />,
+          },
+          {
             path: ":id",
             element: <MultipleChoicePage />,
           },
@@ -55,6 +60,10 @@ export const router = createBrowserRouter([
         path: "word-completion",
         element: <Outlet />,
         children: [
+          {
+            path: "",
+            element: <PresStartQuizPage />,
+          },
           {
             path: ":id",
             element: <WordCompletionPage />,
