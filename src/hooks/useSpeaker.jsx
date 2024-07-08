@@ -4,7 +4,7 @@ const useSpeaker = () => {
   const utteranceRef = useRef(new SpeechSynthesisUtterance());
   const synth = window.speechSynthesis;
 
-  const greeting = (text, perulangan = 2) => {
+  const greeting = (text, loop = 2) => {
     utteranceRef.current.text = text;
     utteranceRef.current.rate = 0.8;
     utteranceRef.current.lang = "id-ID";
@@ -14,7 +14,7 @@ const useSpeaker = () => {
         console.error("SpeechSynthesisUtterance sedang berbicara.");
         return;
       }
-      for (let i = 0; i < perulangan; i++) {
+      for (let i = 0; i < loop; i++) {
         synth.speak(utteranceRef.current);
       }
     };

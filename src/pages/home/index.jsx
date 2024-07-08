@@ -2,18 +2,78 @@ import BookList from "@/sections/book/book-list";
 import BooksIllustration from "../../assets/books.svg";
 import { MOCK_BOOK_LIST } from "@/lib/mock";
 import { Button } from "@/components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ModalSound } from "@/sections/home/modal-sound";
 import { useAudioStore } from "@/zustand";
 import { Volume2, VolumeX } from "lucide-react";
+import { useSpeaker } from "@/hooks";
+import { WelcomeSpeech } from "@/data/HomeSpeech";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 const HomePage = () => {
   const [soundModal, setSoundModal] = useState(false);
+  const { transcript, listening } = useSpeechRecognition();
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
+  const { greeting } = useSpeaker();
+
+  useEffect(() => {
+    const startListening = () => {
+      const commands = [
+        {
+          command: "ya",
+          callback: () => {
+            setIsAudioEnabled(true);
+            setSoundModal(false);
+            SpeechRecognition.stopListening();
+          },
+        },
+        {
+          command: "tidak",
+          callback: () => {
+            setIsAudioEnabled(false);
+            setSoundModal(false);
+            SpeechRecognition.stopListening();
+          },
+        },
+      ];
+      SpeechRecognition.startListening({
+        // continuous: true,
+        // language: "id-ID",
+        commands,
+      });
+    };
+
+    if (!firstVisit || isAudioEnabled) {
+      greeting(WelcomeSpeech, 1);
+      startListening();
+    }
+
+    return () => {
+      SpeechRecognition.stopListening();
+    };
+  }, [firstVisit, greeting, isAudioEnabled, setIsAudioEnabled]);
+
+  const onEnableAudioSpeech = () => {
+    if (listening && transcript.includes("ya")) {
+      setIsAudioEnabled(true);
+      SpeechRecognition.stopListening();
+      setSoundModal(false);
+    }
+  };
+
+  const onDisabledAudioSpeech = () => {
+    if (listening && transcript.includes("tidak")) {
+      setIsAudioEnabled(false);
+      SpeechRecognition.stopListening();
+      setSoundModal(false);
+    }
+  };
 
   const onEnableAudio = () => {
-    setIsAudioEnabled(true);
     setSoundModal(false);
+    setIsAudioEnabled(true);
   };
 
   const onDisabledAudio = () => {
@@ -26,6 +86,7 @@ const HomePage = () => {
       <div className="relative flex flex-col md:flex-row justify-between">
         <div className="absolute inset-0 bg-cover bg-[url('/grid.svg')] opacity-30 z-0"></div>
         <div className="font-nunito w-full md:w-3/4 mt-20 relative z-10 px-4 md:px-0">
+          <h1>{transcript}</h1>
           <h1 className="font-bold leading-normal text-3xl md:text-5xl pb-4 tracking-tighter">
             Membuka <span className="text-[#5E8EAC]">petualangan</span>{" "}
             <span className="text-[#DE6C6B]">baru</span> di setiap halaman
