@@ -45,7 +45,7 @@ const WordCompletionPage = () => {
   const answer = get(questionList, "answer", "");
   const clue = get(questionList, "clue", "");
   const splitClue = clue.split("").map(letter => letter.toUpperCase());
-  const answerQuiz = answer.split("");
+  const answerQuiz = answer.split("").map(letter => letter.toUpperCase());
 
   const handleBackButton = () => {
     setCancelQuiz(true);
@@ -82,12 +82,12 @@ const WordCompletionPage = () => {
     }
   };
 
-  const validateAnswer = (transcript, questionData) => {
-    if (transcript && questionData && questionData.answer) {
-      const sanitized = transcript.charAt(0).toUpperCase();
-      console.log(questionData.answer.toUpperCase());
-      console.log(sanitized);
-      if (questionData.answer.toUpperCase() === sanitized) {
+  const validateAnswer = (transcript, answer) => {
+    if (transcript && questionList && answer) {
+      const sanitizedTranscript = transcript.toUpperCase();
+      const sanitizedAnswer = answer.toUpperCase();
+
+      if (sanitizedTranscript.includes(sanitizedAnswer)) {
         setScore((prevScore) => prevScore + (100 / totalQuestion));
       }
     }
@@ -117,14 +117,7 @@ const WordCompletionPage = () => {
 
   
   useEffect(() => {
-    if (transcript && MOCK_WORD_COMPLETIONS[numberQuiz] && MOCK_WORD_COMPLETIONS[numberQuiz].answer) {
-      const sanitizedTranscript = transcript.toUpperCase();
-      const sanitizedAnswer = MOCK_WORD_COMPLETIONS[numberQuiz].answer.toUpperCase();
-
-      if (sanitizedTranscript.includes(sanitizedAnswer)) {
-        setScore((prevScore) => prevScore + (100 / totalQuestion));
-      }
-    }
+    validateAnswer(transcript, answer);
   }, [transcript, numberQuiz, setScore, totalQuestion]);
   
 
@@ -186,7 +179,7 @@ const WordCompletionPage = () => {
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
       />
-      <ScoreDialog onOpen={isShowScore} onCancel={onCancelQuiz} score={score} />
+      <ScoreDialog onOpen={isShowScore} onBack={onCancelQuiz} score={score} />
     </div>
   );
 };

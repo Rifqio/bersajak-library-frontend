@@ -224,7 +224,7 @@ export const MultipleChoicePage = () => {
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
       />
-      <ScoreDialog onOpen={isShowScore} onCancel={onCancelQuiz} score={score} />
+      <ScoreDialog onOpen={isShowScore} onBack={onCancelQuiz} score={score} />
     </div>
   );
 };

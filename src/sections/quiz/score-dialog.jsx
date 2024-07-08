@@ -11,6 +11,11 @@ import {
   
   const ScoreDialog = ({ onOpen, onBack, score }) => {
     const roundedScore = score.toFixed(1);
+
+    const handleReload = () => {
+      window.location.reload();
+    };
+
     return (
       <Dialog open={onOpen}>
         <DialogContent className="font-poppins">
@@ -21,6 +26,9 @@ import {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
+            <Button onClick={handleReload} variant="destructive">
+              Ulangi
+            </Button>
             <Button onClick={() => onBack()} variant="destructive">
               Kemabli
             </Button>
