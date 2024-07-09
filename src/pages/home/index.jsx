@@ -20,7 +20,6 @@ const HomePage = () => {
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
   const [countdown, setCountdown] = useState(20);
 
-
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -43,18 +42,30 @@ const HomePage = () => {
 
   useEffect(() => {
     if (transcript.includes('IYA' || 'YA')) {
+      resetTranscript();
       onEnableAudioSpeech();
     } 
     if (transcript.includes('TIDAK')) {
+      resetTranscript();
       onDisabledAudioSpeech();
     }
   }, [transcript]);
+
+  console.log(transcript);
+
+  const handleNextSection = () => {
+    setTimeout(() => {
+      greeting('Apakah kamu ingin membaca buku?', 1);
+    }, 2000);
+    // TODO HERE
+  };
 
   const onEnableAudioSpeech = () => {
     setIsAudioEnabled(true);
     resetTranscript();
     stopListening();
     setSoundModal(false);
+    handleNextSection();
   };
 
   const onDisabledAudioSpeech = () => {
