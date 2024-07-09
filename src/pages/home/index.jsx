@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import BookList from "@/sections/book/book-list";
 import BooksIllustration from "../../assets/books.svg";
 import { MOCK_BOOK_LIST } from "@/lib/mock";
@@ -6,65 +8,57 @@ import { useEffect, useState } from "react";
 import { ModalSound } from "@/sections/home/modal-sound";
 import { useAudioStore } from "@/zustand";
 import { Volume2, VolumeX } from "lucide-react";
-import { useSpeaker } from "@/hooks";
+import { useMicrophone, useSpeaker } from "@/hooks";
 import { WelcomeSpeech } from "@/data/HomeSpeech";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
 
 const HomePage = () => {
   const [soundModal, setSoundModal] = useState(false);
-  const commands = [
-    {
-      command: ["ya", "tidak"],
-      callback: ({ command }) => {
-        if (command.includes("ya") || command.includes("Ya")) {
-          onEnableAudioSpeech();
-        } else {
-          onDisabledAudioSpeech();
-        }
-      },
-      matchInterim: true,
-    },
-  ];
-  const { transcript } = useSpeechRecognition({ commands });
+  const { transcript, resetTranscript, startListening, stopListening } =
+  useMicrophone();
+
+  const { greeting, stopSpeech } = useSpeaker();
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
-  const { greeting, speaking } = useSpeaker();
+  const [countdown, setCountdown] = useState(20);
+
 
   useEffect(() => {
-    const startListening = () => {
-      SpeechRecognition.startListening({
-        continuous: true,
-        language: "id-ID",
-      });
-    };
-
-    if (firstVisit || isAudioEnabled) {
-      greeting(WelcomeSpeech, 1);
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
     }
 
-    const intervalId = setInterval(() => {
-      if (!speaking() && (isAudioEnabled || !firstVisit)) {
-        startListening();
-      }
-    }, 1000);
+    if (countdown > 10) {
+      greeting(WelcomeSpeech, 1);
+    } else if (countdown <= 5 && countdown > 0) {
+      stopSpeech();
+      startListening();
+    }
 
     return () => {
-      clearInterval(intervalId);
-      SpeechRecognition.stopListening();
+      clearInterval(timer);
     };
+  }, [countdown, greeting, startListening, stopSpeech]);
 
-  }, [firstVisit, isAudioEnabled, speaking, greeting]);
+  useEffect(() => {
+    if (transcript.includes('IYA' || 'YA')) {
+      onEnableAudioSpeech();
+    } 
+    if (transcript.includes('TIDAK')) {
+      onDisabledAudioSpeech();
+    }
+  }, [transcript]);
 
   const onEnableAudioSpeech = () => {
     setIsAudioEnabled(true);
-    SpeechRecognition.stopListening();
+    stopListening();
     setSoundModal(false);
   };
 
   const onDisabledAudioSpeech = () => {
     setIsAudioEnabled(false);
-    SpeechRecognition.stopListening();
+    stopListening();
     setSoundModal(false);
   };
 
@@ -83,7 +77,6 @@ const HomePage = () => {
       <div className="relative flex flex-col md:flex-row justify-between">
         <div className="absolute inset-0 bg-cover bg-[url('/grid.svg')] opacity-30 z-0"></div>
         <div className="font-nunito w-full md:w-3/4 mt-20 relative z-10 px-4 md:px-0">
-          <h1>{transcript}</h1>
           <h1 className="font-bold leading-normal text-3xl md:text-5xl pb-4 tracking-tighter">
             Membuka <span className="text-[#5E8EAC]">petualangan</span>{" "}
             <span className="text-[#DE6C6B]">baru</span> di setiap halaman
