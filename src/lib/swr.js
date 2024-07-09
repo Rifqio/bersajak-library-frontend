@@ -8,6 +8,6 @@ const defaultConfig = {
 export const useSwr = (url, fetcher, config = '') => {
     return useSWR(url, fetcher, {
         ...defaultConfig,
-        config
+        config,
     });
 }

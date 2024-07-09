@@ -6,6 +6,7 @@ import { BookDetailPage, BookViewerPage } from "./pages/book";
 import { MultipleChoicePage, WordCompletionPage } from "./pages/quiz";
 import { Page404 } from "./pages/error";
 import PresStartQuizPage from "./pages/quiz/prestart-quiz";
+import AudioBookPage from "./pages/book/audio-book";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,16 @@ export const router = createBrowserRouter([
         path: "read",
         element: <Outlet />,
         children: [
+          {
+            path: "audio",
+            element: <Outlet />,
+            children: [
+              {
+                path: ":id",
+                element: <AudioBookPage />,
+              },
+            ],
+          },
           {
             path: ":id",
             element: <BookViewerPage />,

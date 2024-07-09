@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSpeaker, useMicrophone } from "@/hooks";
 import useSWR from "swr";
 import { get } from "lodash";
-import fetcher from "@/lib/fetcher";
+import { fetcher } from "@/lib/fetcher";
 import { MOCK_QUESTIONS } from "@/lib/mock";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -87,8 +87,8 @@ export const MultipleChoicePage = () => {
   const onSelectedAnswer = (index, value) => {
     setSelectedIndex(index);
     setSelectedOption(value.option);
-    if(value.option === answer){
-      setScore((prevScore) => prevScore + (100 / totalQuestion));
+    if (value.option === answer) {
+      setScore((prevScore) => prevScore + 100 / totalQuestion);
     }
   };
 
@@ -115,7 +115,7 @@ export const MultipleChoicePage = () => {
         position: "top-center",
         autoClose: 1000,
         pauseOnHover: false,
-      }); 
+      });
       setTimeout(() => {
         setCountdown(40);
         setSelectedIndex("");
@@ -146,7 +146,7 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     if (transcript.includes(answer)) {
       setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
-      setScore((prevScore) => prevScore + (100 / totalQuestion));
+      setScore((prevScore) => prevScore + 100 / totalQuestion);
     } else {
       setSelectedIndex(
         validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz])
@@ -162,15 +162,12 @@ export const MultipleChoicePage = () => {
       }, 1000);
     }
 
-    const optionTexts = optionList.map(option => option.text).join(' ');
+    const optionTexts = optionList.map((option) => option.text).join(" ");
     if (countdown > 20) {
       greeting(question, 1);
-
-    } 
-    else if (countdown >10) {
+    } else if (countdown > 10) {
       greeting(optionTexts, 1);
-    }
-    else if (countdown <= 20 && countdown > 0) {
+    } else if (countdown <= 20 && countdown > 0) {
       stopSpeech();
       startListening();
     } else {

@@ -3,7 +3,7 @@
 import { useSpeaker, useMicrophone } from "@/hooks";
 import { useSwr } from "@/lib/swr";
 import { useParams } from "react-router-dom";
-import fetcher from "@/lib/fetcher";
+import { fetcher } from "@/lib/fetcher";
 import { get } from "lodash";
 import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
@@ -17,7 +17,8 @@ import ScoreDialog from "@/sections/quiz/score-dialog";
 
 const WordCompletionPage = () => {
   const { id } = useParams();
-  const { transcript, startListening, stopListening, resetTranscript } = useMicrophone();
+  const { transcript, startListening, stopListening, resetTranscript } =
+    useMicrophone();
   const { greeting, stopSpeech } = useSpeaker();
   const navigate = useNavigate();
 
@@ -44,8 +45,8 @@ const WordCompletionPage = () => {
   const question = get(questionList, "question", "");
   const answer = get(questionList, "answer", "");
   const clue = get(questionList, "clue", "");
-  const splitClue = clue.split("").map(letter => letter.toUpperCase());
-  const answerQuiz = answer.split("").map(letter => letter.toUpperCase());
+  const splitClue = clue.split("").map((letter) => letter.toUpperCase());
+  const answerQuiz = answer.split("").map((letter) => letter.toUpperCase());
 
   const handleBackButton = () => {
     setCancelQuiz(true);
@@ -72,7 +73,7 @@ const WordCompletionPage = () => {
         position: "top-center",
         autoClose: 1000,
         pauseOnHover: false,
-      });      
+      });
       setTimeout(() => {
         setCountdown(20);
         stopListening();
@@ -88,10 +89,10 @@ const WordCompletionPage = () => {
       const sanitizedAnswer = answer.toUpperCase();
 
       if (sanitizedTranscript.includes(sanitizedAnswer)) {
-        setScore((prevScore) => prevScore + (100 / totalQuestion));
+        setScore((prevScore) => prevScore + 100 / totalQuestion);
       }
     }
-  }  
+  };
 
   useEffect(() => {
     let timer;
@@ -115,11 +116,9 @@ const WordCompletionPage = () => {
     };
   }, [countdown, startListening, stopSpeech]);
 
-  
   useEffect(() => {
     validateAnswer(transcript, answer);
   }, [transcript, numberQuiz, setScore, totalQuestion]);
-  
 
   return (
     <div className="mt-16 h-screen flex flex-col">

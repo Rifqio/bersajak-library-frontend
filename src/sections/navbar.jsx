@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import { AlignJustify, X } from "lucide-react";
 
-export const Navbar = ({ className }) => {
+export const Navbar = ({ className, isDark }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -24,15 +24,15 @@ export const Navbar = ({ className }) => {
           <div className="flex-shrink-0 flex items-center">
             <button
               onClick={handleNavigate}
-              className="text-2xl text-[#2B3448] font-poppins tracking-tight font-bold cursor-pointer"
+              className={`text-2xl ${isDark ? 'text-yellow-100 ' : 'text-[#2B3448] '} font-poppins tracking-tight font-bold cursor-pointer`}
             >
               Bersajak
             </button>
           </div>
           <div className="hidden md:flex md:items-center">
             <ul className="flex items-center space-x-6">
-              <li className="font-semibold text-gray-700">Masuk</li>
-              <Button className="bg-[#EEBE62] text-white font-bold font-nunito text-base hover:bg-[#BF8140]">
+              <li className={`font-bold ${isDark ? 'text-yellow-100' : 'text-gray-700'}`}>Masuk</li>
+              <Button className={`bg-[#EEBE62] ${isDark ? 'text-black' : 'text-gray-700'} font-bold font-nunito text-base hover:bg-[#BF8140]`}>
                 Daftar
               </Button>
             </ul>
@@ -63,4 +63,5 @@ export const Navbar = ({ className }) => {
 
 Navbar.propTypes = {
   className: PropTypes.string,
+  isDark: PropTypes.bool,
 };

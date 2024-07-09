@@ -1,34 +1,40 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const useSpeaker = () => {
   const utteranceRef = useRef(new SpeechSynthesisUtterance());
   const synth = window.speechSynthesis;
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const greeting = (text, loop = 2) => {
     utteranceRef.current.text = text;
     utteranceRef.current.rate = 0.8;
     utteranceRef.current.lang = "id-ID";
 
-    const speak = () => {
-      if (synth.speaking) {
-        console.error("SpeechSynthesisUtterance sedang berbicara.");
-        return;
-      }
-      for (let i = 0; i < loop; i++) {
-        synth.speak(utteranceRef.current);
+    utteranceRef.current.onstart = () => setIsSpeaking(true);
+    utteranceRef.current.onend = () => {
+      setIsSpeaking(false);
+      stopSpeech();
+      if (loop > 1) {
+        greeting(text, loop - 1);
       }
     };
 
-    speak();
+    if (!synth.speaking) {
+      synth.speak(utteranceRef.current);
+    }
   };
+
+  const speaking = () => isSpeaking;
 
   const stopSpeech = () => {
     if (synth.speaking) {
       utteranceRef.current.onend = () => {
         synth.cancel();
+        setIsSpeaking(false);
       };
     } else {
       synth.cancel();
+      setIsSpeaking(false);
     }
   };
 
@@ -38,7 +44,7 @@ const useSpeaker = () => {
     }
   };
 
-  return { greeting, stopSpeech, playSpeech };
+  return { greeting, speaking, stopSpeech, playSpeech };
 };
 
 export default useSpeaker;

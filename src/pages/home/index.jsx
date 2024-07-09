@@ -14,61 +14,58 @@ import SpeechRecognition, {
 
 const HomePage = () => {
   const [soundModal, setSoundModal] = useState(false);
-  const { transcript, listening } = useSpeechRecognition();
+  const commands = [
+    {
+      command: ["ya", "tidak"],
+      callback: ({ command }) => {
+        if (command.includes("ya") || command.includes("Ya")) {
+          onEnableAudioSpeech();
+        } else {
+          onDisabledAudioSpeech();
+        }
+      },
+      matchInterim: true,
+    },
+  ];
+  const { transcript } = useSpeechRecognition({ commands });
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
-  const { greeting } = useSpeaker();
+  const { greeting, speaking } = useSpeaker();
 
   useEffect(() => {
     const startListening = () => {
-      const commands = [
-        {
-          command: "ya",
-          callback: () => {
-            setIsAudioEnabled(true);
-            setSoundModal(false);
-            SpeechRecognition.stopListening();
-          },
-        },
-        {
-          command: "tidak",
-          callback: () => {
-            setIsAudioEnabled(false);
-            setSoundModal(false);
-            SpeechRecognition.stopListening();
-          },
-        },
-      ];
       SpeechRecognition.startListening({
-        // continuous: true,
-        // language: "id-ID",
-        commands,
+        continuous: true,
+        language: "id-ID",
       });
     };
 
-    if (!firstVisit || isAudioEnabled) {
+    if (firstVisit || isAudioEnabled) {
       greeting(WelcomeSpeech, 1);
-      startListening();
     }
+
+    const intervalId = setInterval(() => {
+      if (!speaking() && (isAudioEnabled || !firstVisit)) {
+        startListening();
+      }
+    }, 1000);
 
     return () => {
+      clearInterval(intervalId);
       SpeechRecognition.stopListening();
     };
-  }, [firstVisit, greeting, isAudioEnabled, setIsAudioEnabled]);
+
+  }, [firstVisit, isAudioEnabled, speaking, greeting]);
 
   const onEnableAudioSpeech = () => {
-    if (listening && transcript.includes("ya")) {
-      setIsAudioEnabled(true);
-      SpeechRecognition.stopListening();
-      setSoundModal(false);
-    }
+    setIsAudioEnabled(true);
+    SpeechRecognition.stopListening();
+    setSoundModal(false);
   };
 
   const onDisabledAudioSpeech = () => {
-    if (listening && transcript.includes("tidak")) {
-      setIsAudioEnabled(false);
-      SpeechRecognition.stopListening();
-      setSoundModal(false);
-    }
+    setIsAudioEnabled(false);
+    SpeechRecognition.stopListening();
+    setSoundModal(false);
   };
 
   const onEnableAudio = () => {
