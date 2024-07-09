@@ -52,12 +52,14 @@ const HomePage = () => {
 
   const onEnableAudioSpeech = () => {
     setIsAudioEnabled(true);
+    resetTranscript();
     stopListening();
     setSoundModal(false);
   };
 
   const onDisabledAudioSpeech = () => {
     setIsAudioEnabled(false);
+    resetTranscript();
     stopListening();
     setSoundModal(false);
   };
