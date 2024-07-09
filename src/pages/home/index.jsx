@@ -41,36 +41,52 @@ const HomePage = () => {
   }, [countdown, greeting, startListening, stopSpeech]);
 
   useEffect(() => {
-    if (transcript.includes('IYA' || 'YA')) {
-      resetTranscript();
+    if (transcript.includes('YA' || 'IYA')) {
       onEnableAudioSpeech();
     } 
+    if (transcript.includes('AKU INGIN MEMBACA')) {
+      handleSelectReading();
+    } 
     if (transcript.includes('TIDAK')) {
-      resetTranscript();
-      onDisabledAudioSpeech();
+      handleSiniarSection();
     }
   }, [transcript]);
 
   console.log(transcript);
 
-  const handleNextSection = () => {
+  const handleReadingSection = () => {
     setTimeout(() => {
       greeting('Apakah kamu ingin membaca buku?', 1);
+      resetTranscript();
+      startListening();
+    }, 2000);
+  };
+  const handleSelectReading = () => {
+    setTimeout(() => {
+      greeting('Mau baca buku apa hari ini?', 1);
+      resetTranscript();
+      startListening();
+    }, 2000);
+    // TODO HERE
+  };
+
+  const handleSiniarSection = () => {
+    setTimeout(() => {
+      greeting('Apakah kamu ingin mendengar siniar?', 1);
+      resetTranscript();
+      startListening();
     }, 2000);
     // TODO HERE
   };
 
   const onEnableAudioSpeech = () => {
     setIsAudioEnabled(true);
-    resetTranscript();
-    stopListening();
     setSoundModal(false);
-    handleNextSection();
+    handleReadingSection();
   };
 
   const onDisabledAudioSpeech = () => {
     setIsAudioEnabled(false);
-    resetTranscript();
     stopListening();
     setSoundModal(false);
   };
