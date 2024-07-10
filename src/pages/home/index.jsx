@@ -1,97 +1,112 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import BookList from "@/sections/book/book-list";
 import BooksIllustration from "../../assets/books.svg";
-import { MOCK_BOOK_LIST } from "@/lib/mock";
 import { Button } from "@/components";
 import { useEffect, useState } from "react";
 import { ModalSound } from "@/sections/home/modal-sound";
 import { useAudioStore } from "@/zustand";
 import { Volume2, VolumeX } from "lucide-react";
-import { useMicrophone, useSpeaker } from "@/hooks";
+import { useSpeaker } from "@/hooks";
 import { WelcomeSpeech } from "@/data/HomeSpeech";
-import { useSwr } from "@/lib/swr";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { BookListLoading } from "@/sections/book/book-list-loading";
 
 const HomePage = () => {
   const [soundModal, setSoundModal] = useState(false);
-  const { data, error, isLoading } = useSwr("/book/list", fetcher);
-  const { transcript, resetTranscript, startListening, stopListening } =
-    useMicrophone();
+  const { data, error, isLoading } = useSWR("/book/list", fetcher);
 
-  const { greeting, stopSpeech } = useSpeaker();
+  const commands = [
+    {
+      command: ["ya", "tidak"],
+      callback: ({ command }) => {
+        if (command.includes("ya") || command.includes("Ya")) {
+          onEnableAudioSpeech();
+        } else {
+          onDisabledAudioSpeech();
+        }
+      },
+      matchInterim: true,
+    },
+    {
+      command: ["aku mau", "tidak"],
+      callback: ({ command }) => {
+        if (command.includes("aku mau") || command.includes("mau")) {
+          handleSelectReading();
+        } else {
+          handleSiniarSection();
+        }
+      },
+      matchInterim: true,
+    },
+  ];
+
+  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
+
+  const { greeting, speaking } = useSpeaker();
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
-  const [countdown, setCountdown] = useState(20);
+
 
   useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
+    const startListening = () => {
+      SpeechRecognition.startListening({
+        continuous: true,
+        language: "id-ID",
+      });
+    };
+
+    if (firstVisit) {
+      greeting(WelcomeSpeech, 2);
+      resetTranscript();
     }
 
-    if (countdown > 10) {
-      // greeting(WelcomeSpeech, 1);
-    } else if (countdown <= 5 && countdown > 0) {
-      stopSpeech();
-      startListening();
-    }
+    const intervalId = setInterval(() => {
+      if (!speaking() && (isAudioEnabled || !firstVisit)) {
+        startListening();
+      }
+    }, 1000);
 
     return () => {
-      clearInterval(timer);
+      clearInterval(intervalId);
+      SpeechRecognition.stopListening();
     };
-  }, [countdown, greeting, startListening, stopSpeech]);
 
-  useEffect(() => {
-    if (transcript.includes("YA" || "IYA")) {
-      onEnableAudioSpeech();
-    }
-    if (transcript.includes("AKU INGIN MEMBACA")) {
-      handleSelectReading();
-    }
-    if (transcript.includes("TIDAK")) {
-      handleSiniarSection();
-    }
-  }, [transcript]);
-
-  console.log(transcript);
+  }, [firstVisit, isAudioEnabled, speaking, greeting, resetTranscript]);
 
   const handleReadingSection = () => {
     setTimeout(() => {
-      greeting("Apakah kamu ingin membaca buku?", 1);
+      greeting("Apakah kamu ingin membaca buku?", 2);
       resetTranscript();
-      startListening();
     }, 2000);
   };
+
   const handleSelectReading = () => {
     setTimeout(() => {
-      greeting("Mau baca buku apa hari ini?", 1);
+      greeting("Mau baca buku apa hari ini?", 2);
       resetTranscript();
-      startListening();
     }, 2000);
-    // TODO HERE
   };
 
   const handleSiniarSection = () => {
     setTimeout(() => {
-      greeting("Apakah kamu ingin mendengar siniar?", 1);
+      greeting("Apakah kamu ingin mendengar siniar?", 2);
       resetTranscript();
-      startListening();
     }, 2000);
-    // TODO HERE
   };
 
   const onEnableAudioSpeech = () => {
     setIsAudioEnabled(true);
+    SpeechRecognition.stopListening();
     setSoundModal(false);
     handleReadingSection();
   };
 
   const onDisabledAudioSpeech = () => {
     setIsAudioEnabled(false);
-    stopListening();
+    SpeechRecognition.stopListening();
     setSoundModal(false);
   };
 
