@@ -12,7 +12,7 @@ const BookViewerPage = () => {
   const [page, setPage] = useState(1);
   const [pdfData, setPdfData] = useState("");
 
-  const { data, error } = useSwr(`/book/${id}?page=${page}`, fetcher);
+  const { data, error } = useSwr(`/book/read/${id}?page=${page}`, fetcher);
 
   useEffect(() => {
     if (data) {

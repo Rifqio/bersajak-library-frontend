@@ -1,31 +1,35 @@
-import { fetcherWithRange } from "@/lib/fetcher";
+import { fetcher, fetcherWithRange } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
 import AudioPlayer from "react-h5-audio-player";
 import "react-h5-audio-player/lib/styles.css";
+import { useParams } from "react-router-dom";
 
 const Player = ({ filename }) => {
-    const { data, error } = useSwr(`/audio/${filename}`, fetcherWithRange);
-
-    if (error) return <div>Error loading audio</div>;
-    if (!data) return <div>Loading...</div>;
-
-    const audioUrl = URL.createObjectURL(data);
-
+    const { data: audioData, error: audioError } = useSwr(`/audio/${filename}`, fetcherWithRange);
+    
+    if (audioError) return <div>Error loading audio</div>;
+    if (!audioData) return <div>Loading...</div>;
+    
+    const audioUrl = URL.createObjectURL(audioData);
+    
     return <AudioPlayer autoPlay src={audioUrl} />;
 };
 
 const AudioBookPage = () => {
+    const { id } = useParams();
+    const { data } = useSwr(`/book/${id}`, fetcher);
+    const book = data?.data;
     return (
-        <div className='flex flex-col justify-center'>
-            <div className='flex justify-center'>
+        <div className='flex flex-col items-center p-4'>
+            <div className='flex justify-center mb-4'>
                 <img
-                    className='object-cover h-full rounded-md drop-shadow-md mb-4'
-                    src='https://unsplash.it/450/400'
+                    className='object-cover w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-md drop-shadow-md'
+                    src={book?.thumbnail_url}
                     alt='Book Cover'
                 />
             </div>
-            <Player filename='audio.mp3' />
+            <Player filename={id} />
         </div>
     );
 };
