@@ -109,7 +109,7 @@ const ColorblindPicker = () => {
       <Button
         variant='ghost'
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        // onMouseLeave={handleMouseLeave}
         className='bg-[#EEBE62] text-[#40485A] font-bold font-nunito text-base rounded-full w-14 h-14 hover:bg-[#BF8140]'
       >
         <Pipette size={24} />

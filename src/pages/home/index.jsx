@@ -114,14 +114,14 @@ const HomePage = () => {
             Membuka <span className='text-[#5E8EAC]'>petualangan</span>{" "}
             <span className='text-[#DE6C6B]'>baru</span> di setiap halaman
           </h1>
-          <p className='text-gray-600 pb-4 tracking-tight'>
+          {/* <p className='text-gray-600 pb-4 tracking-tight'>
             Pariatur laborum veniam irure id Lorem id dolor magna pariatur
             dolore deserunt. Adipisicing ullamco anim nisi exercitation Lorem
             exercitation sit anim sunt.
-          </p>
-          <Button className='bg-[#EEBE62] text-[#40485A] font-bold font-nunito text-base hover:bg-[#BF8140]'>
+          </p> */}
+          {/* <Button className='bg-[#EEBE62] text-[#40485A] font-bold font-nunito text-base hover:bg-[#BF8140]'>
             Gabung sekarang
-          </Button>
+          </Button> */}
         </div>
         <div className='items-start mt-10 md:-mt-24 relative z-10 px-4 md:px-0'>
           <img
@@ -140,11 +140,11 @@ const HomePage = () => {
         <h1 className='text-center font-bold tracking-tighter text-2xl md:text-3xl'>
           Mau baca buku apa hari ini?
         </h1>
-        <p className='text-center text-gray-600 mt-2'>
+        {/* <p className='text-center text-gray-600 mt-2'>
           Pariatur laborum veniam irure id Lorem id dolor magna pariatur dolore
           deserunt. Adipisicing ullamco anim nisi exercitation Lorem
           exercitation sit anim sunt.
-        </p>
+        </p> */}
         <div className='mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
           {data?.data?.map((book) => (
             <BookList
