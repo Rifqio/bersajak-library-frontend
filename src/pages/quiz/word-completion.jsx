@@ -1,15 +1,14 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useSpeaker, useMicrophone } from "@/hooks";
-import { useSwr } from "@/lib/swr";
+import { usePost, useSwr } from "@/lib/swr";
 import { useParams } from "react-router-dom";
 import { fetcher } from "@/lib/fetcher";
 import { get } from "lodash";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import BooksIllustration from "../../assets/books.svg";
-import { MOCK_WORD_COMPLETIONS } from "@/lib/mock";
 import { CancelDialog } from "@/sections/quiz";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
@@ -44,7 +43,13 @@ const WordCompletionPage = () => {
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
-  const { imageUrl } = MOCK_WORD_COMPLETIONS[0];
+  //post data  
+  const body = {
+    number: numberQuiz,
+    answer: transcript
+  }
+  const { mutate: validateAnswer } = usePost(`/quiz/word-completion/${id}`, body);
+
   // fetch data
   const { data: questionResponse } = useSwr(
     `/quiz/word-completion/${id}?number=${numberQuiz}`,
@@ -55,7 +60,7 @@ const WordCompletionPage = () => {
     }
   );
   const questionList = questionResponse?.data;
-  const totalQuestion = questionResponse?.data?.totalCount;
+  const totalQuestion = 10;
   const question = get(questionList, "question", "");
   const result = splitQuestion(question);
   const splitClue = result.clue.split("").map((letter) => letter.toUpperCase());
@@ -95,17 +100,6 @@ const WordCompletionPage = () => {
     }
   };
 
-  const validateAnswer = (transcript, answer) => {
-    if (transcript && questionList && answer) {
-      const sanitizedTranscript = transcript.toUpperCase();
-      const sanitizedAnswer = answer.toUpperCase();
-
-      if (sanitizedTranscript.includes(sanitizedAnswer)) {
-        setScore((prevScore) => prevScore + 100 / totalQuestion);
-      }
-    }
-  };
-
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -129,8 +123,10 @@ const WordCompletionPage = () => {
   }, [countdown, startListening, stopSpeech]);
 
   useEffect(() => {
-    validateAnswer(transcript);
-  }, [transcript, numberQuiz, setScore, totalQuestion]);
+    if (countdown <= 10 && countdown > 0) {
+      validateAnswer();
+    }
+  }, [transcript, numberQuiz, countdown, id, validateAnswer]);
 
   return (
     <div className='mt-16 h-screen flex flex-col'>
@@ -163,7 +159,6 @@ const WordCompletionPage = () => {
           />
         ))}
       </div>
-
       <Button
         onClick={handleBackButton}
         className='bg-red-500 mt-8 hover:bg-red-700 font-poppins font-bold text-white'

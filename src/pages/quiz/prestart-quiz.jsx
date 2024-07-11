@@ -3,6 +3,7 @@ import { useSpeaker, useMicrophone } from "@/hooks";
 import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import { useNavigate } from "react-router-dom";
+import BooksIllustration from "../../assets/books.svg";
 
 const PrestartQuizPage = () => {
   const { transcript, startListening, stopListening, resetTranscript } =
@@ -56,8 +57,12 @@ const PrestartQuizPage = () => {
           Apakah Kamu Siap Memulai Quiz?
         </h1>
       </div>
-      <div className="flex justify-center items-center pb-4 pt-4">
-        TODO IMAGE PRE QUIZ
+      <div className='flex justify-center items-center pb-4 pt-4'>
+        <img
+          src={BooksIllustration}
+          alt='Books Illustration'
+          style={{ width: "600px", height: "400px" }}
+        />
       </div>
 
       <Button

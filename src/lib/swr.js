@@ -13,17 +13,17 @@ export const useSwr = (url, fetcher, config = '') => {
 }
 
 export const usePost = (url, body, config = {}) => {
-    const postData = async (url) => {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-            ...config,
-        });
-        return response.json();
+    const postData = async () => {
+      const response = await fetch(`http://localhost:3000/api/${url}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        ...config,
+      });
+      return response.json();
     };
-
+  
     return useSwr(url, postData, config);
-}
+  };
