@@ -1,3 +1,4 @@
 import useAudioStore from "./AudioStore";
+import useModalErrorStore from "./ModalErrorStore";
 
-export { useAudioStore };
+export { useAudioStore, useModalErrorStore };

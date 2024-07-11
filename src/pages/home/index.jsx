@@ -1,24 +1,17 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
 import BookList from "@/sections/book/book-list";
 import BooksIllustration from "../../assets/books.svg";
-import { MOCK_BOOK_LIST } from "@/lib/mock";
 import { Button } from "@/components";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ModalSound } from "@/sections/home/modal-sound";
 import { useAudioStore } from "@/zustand";
 import { Volume2, VolumeX } from "lucide-react";
 import { useMicrophone, useSpeaker } from "@/hooks";
-import { WelcomeSpeech } from "@/data/HomeSpeech";
 import { useSwr } from "@/lib/swr";
 import { fetcher } from "@/lib/fetcher";
 import { BookListLoading } from "@/sections/book/book-list-loading";
 import { useSpeechRecognition } from "react-speech-recognition";
 
 const HomePage = () => {
-  const [soundModal, setSoundModal] = useState(false);
-  const { data, error, isLoading } = useSwr("/book/list", fetcher);
-
   const commands = [
     {
       command: ["iya", "tidak"],
@@ -35,72 +28,99 @@ const HomePage = () => {
       command: ["aku mau", "tidak"],
       callback: ({ command }) => {
         if (command.includes("aku mau") || command.includes("mau")) {
-          handleSelectReading();
+          // handleSelectReading();
         } else {
-          handleSiniarSection();
+          // handleSiniarSection();
         }
       },
       matchInterim: true
     }
   ];
 
-  const { startListening, stopListening } =
-    useMicrophone();
-  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
+  const [soundModal, setSoundModal] = useState(false);
+  const [queryHome, setQueryHome] = useState("greetings=true");
+  const [onPlayGreetings, setOnPlayGreetings] = useState(false);
+  const [stepAudio, setStepAudio] = useState(1);
+  const [navigationUrl, setNavigationUrl] = useState(null);
+  const [bookListUrl, setBookListUrl] = useState(null);
+  const [bookListInView, setBookListInView] = useState(false);
 
-  const { greeting, stopSpeech } = useSpeaker();
+  const { data: navigationData } = useSwr(navigationUrl, fetcher);
+  const { data, isLoading } = useSwr("/book/list", fetcher);
+  const { data: bookListAudio } = useSwr(bookListUrl, fetcher);
+  const { data: homeData } = useSwr(`/guide/home?${queryHome}`, fetcher);
+
+  const { startListening, stopListening } = useMicrophone();
+  const { resetTranscript } = useSpeechRecognition({ commands });
+
+  const { greeting } = useSpeaker();
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
-  const [countdown, setCountdown] = useState(20);
+
+  const audioRef = useRef(null);
+  const audioNavigationRef = useRef(null);
+  const bookListRef = useRef(null);
+  const scrollAudioRef = useRef(null);
+  const audioUrl = homeData?.data?.audio;
 
   useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
+    if (audioUrl && audioRef.current) {
+      if (queryHome !== "greetings=true") {
+        audioRef.current.play().catch(error => console.error('Error playing greeting audio:', error));
+      }
     }
+  }, [audioUrl, queryHome]);
 
-    if (countdown > 10 && firstVisit) {
-      greeting(WelcomeSpeech, 1);
-    } else if (countdown <= 5 && countdown > 0) {
-      stopSpeech();
-      startListening();
+  useEffect(() => {
+    const firstCondition = navigationData?.data?.audio && audioNavigationRef.current;
+    const secondCondition = !onPlayGreetings && stepAudio === 2;
+
+    if (firstCondition && secondCondition) {
+      audioNavigationRef.current.play().catch(error => console.error('Error playing navigation audio:', error));
     }
 
     return () => {
-      clearInterval(timer);
+      if (audioNavigationRef.current) {
+        audioNavigationRef.current.pause();
+      }
     };
-  }, [countdown, greeting, startListening, stopSpeech]);
+  }, [navigationData, onPlayGreetings, stepAudio]);
 
-  console.log(transcript);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setBookListInView(true);
+        } else {
+          setBookListInView(false);
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-  const handleReadingSection = () => {
-    setTimeout(() => {
-      greeting("Apakah kamu mau membaca buku?", 1);
-      resetTranscript();
-      startListening();
-    }, 2000);
-  };
-  const handleSelectReading = () => {
-    setTimeout(() => {
-      greeting("Mau baca buku apa hari ini?", 1);
-      resetTranscript();
-      startListening();
-    }, 2000);
-  };
+    if (bookListRef.current) {
+      observer.observe(bookListRef.current);
+    }
 
-  const handleSiniarSection = () => {
-    setTimeout(() => {
-      greeting("Apakah kamu ingin mendengar siniar?", 1);
-      resetTranscript();
-      startListening();
-    }, 2000);
-  };
+    return () => {
+      if (bookListRef.current) {
+        observer.unobserve(bookListRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (bookListInView && scrollAudioRef.current) {
+      console.log('Playing scroll audio');
+      scrollAudioRef.current.play().catch(error => console.error('Error playing scroll audio:', error));
+    } else if (scrollAudioRef.current) {
+      console.log('Pausing scroll audio');
+      scrollAudioRef.current.pause();
+    }
+  }, [bookListInView]);
 
   const onEnableAudioSpeech = () => {
     setIsAudioEnabled(true);
     setSoundModal(false);
-    handleReadingSection();
   };
 
   const onDisabledAudioSpeech = () => {
@@ -110,14 +130,27 @@ const HomePage = () => {
   };
 
   const onEnableAudio = () => {
+    setQueryHome("isAudioEnabled=true");
     setSoundModal(false);
     setIsAudioEnabled(true);
+    setNavigationUrl("/guide/navigation");
   };
 
   const onDisabledAudio = () => {
+    setQueryHome("isAudioEnabled=false");
     setIsAudioEnabled(false);
     setSoundModal(false);
   };
+
+  const onEndedGreeting = () => {
+    setOnPlayGreetings(false);
+    setStepAudio(2);
+  };
+
+  const handleSelectBooks = () => {
+    setBookListUrl("/guide/book-list");
+    setStepAudio(3);
+  }
 
   const HeroSection = () => {
     return (
@@ -128,14 +161,14 @@ const HomePage = () => {
             Membuka <span className='text-[#5E8EAC]'>petualangan</span>{" "}
             <span className='text-[#DE6C6B]'>baru</span> di setiap halaman
           </h1>
-          {/* <p className='text-gray-600 pb-4 tracking-tight'>
+          <p className='text-gray-600 pb-4 tracking-tight'>
             Pariatur laborum veniam irure id Lorem id dolor magna pariatur
             dolore deserunt. Adipisicing ullamco anim nisi exercitation Lorem
             exercitation sit anim sunt.
-          </p> */}
-          {/* <Button className='bg-[#EEBE62] text-[#40485A] font-bold font-nunito text-base hover:bg-[#BF8140]'>
+          </p>
+          <Button className='bg-[#EEBE62] text-[#40485A] font-bold font-nunito text-base hover:bg-[#BF8140]'>
             Gabung sekarang
-          </Button> */}
+          </Button>
         </div>
         <div className='items-start mt-10 md:-mt-24 relative z-10 px-4 md:px-0'>
           <img
@@ -150,15 +183,15 @@ const HomePage = () => {
 
   const BookListSection = () => {
     return (
-      <div className='mt-4 font-nunito px-4 md:px-0'>
+      <div id='book-list' ref={bookListRef} className='mt-4 font-nunito px-4 md:px-0'>
         <h1 className='text-center font-bold tracking-tighter text-2xl md:text-3xl'>
           Mau baca buku apa hari ini?
         </h1>
-        {/* <p className='text-center text-gray-600 mt-2'>
+        <p className='text-center text-gray-600 mt-2'>
           Pariatur laborum veniam irure id Lorem id dolor magna pariatur dolore
           deserunt. Adipisicing ullamco anim nisi exercitation Lorem
           exercitation sit anim sunt.
-        </p> */}
+        </p>
         <div className='mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
           {data?.data?.map((book) => (
             <BookList
@@ -175,8 +208,35 @@ const HomePage = () => {
     );
   };
 
+  const AudioSection = () => {
+    return (
+      <>
+        <audio
+          autoPlay={firstVisit && isAudioEnabled}
+          ref={audioRef}
+          onPlay={() => setOnPlayGreetings(true)}
+          onEnded={onEndedGreeting}
+          src={audioUrl}
+          className='hidden'
+        />
+        <audio
+          src={navigationData?.data?.audio}
+          ref={audioNavigationRef}
+          onEnded={handleSelectBooks}
+          className='hidden'
+        />
+        <audio
+          ref={scrollAudioRef}
+          src={bookListAudio?.data?.audio}
+          className='hidden'
+        />
+      </>
+    );
+  };
+
   return (
     <>
+      {AudioSection()}
       {HeroSection()}
       {isLoading ? <BookListLoading /> : BookListSection()}
       <Button
@@ -186,6 +246,7 @@ const HomePage = () => {
         {isAudioEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
       </Button>
       <ModalSound
+        disabled={onPlayGreetings}
         onOpen={firstVisit || soundModal}
         onEnableAudio={onEnableAudio}
         onOpenChange={setSoundModal}

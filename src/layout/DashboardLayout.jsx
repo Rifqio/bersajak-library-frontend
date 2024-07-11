@@ -1,5 +1,6 @@
 import { Container } from "@/components";
 import ColorblindPicker from "@/components/colorblind";
+import { ErrorModal } from "@/components/error-modal";
 import { Navbar } from "@/sections";
 import { Outlet } from "react-router-dom";
 
@@ -9,6 +10,7 @@ const DashboardLayout = () => {
       <Navbar />
       <Outlet />
       <ColorblindPicker />
+      <ErrorModal />
     </Container>
   );
 };
