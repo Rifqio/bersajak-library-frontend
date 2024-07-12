@@ -7,11 +7,14 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components";
+import { ROUTE } from "@/lib/constants";
 import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 
 const ScoreDialog = ({ onOpen, onBack, score }) => {
+  const navigate = useNavigate();
   const { data: scoreAudio } = useSwr(`/guide/score?score=${score}`, fetcher);
   const roundedScore = score.toFixed(0);
   const percentage = (roundedScore / 100) * 100;
@@ -20,6 +23,9 @@ const ScoreDialog = ({ onOpen, onBack, score }) => {
 
   const handleReload = () => {
     window.location.reload();
+  }
+  const handleGoTo = () => {
+    navigate(ROUTE.Home);
   };
 
   return (
@@ -58,7 +64,7 @@ const ScoreDialog = ({ onOpen, onBack, score }) => {
           <Button onClick={handleReload} variant='outline'>
             Ulangi
           </Button>
-          <Button onClick={() => onBack()} variant='destructive'>
+          <Button onClick={() => handleGoTo()} variant='destructive'>
             Kembali
           </Button>
           <audio src={scoreAudio?.data} autoPlay className='hidden' />
