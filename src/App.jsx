@@ -7,6 +7,7 @@ import { MultipleChoicePage, WordCompletionPage } from "./pages/quiz";
 import { Page404 } from "./pages/error";
 import PresStartQuizPage from "./pages/quiz/prestart-quiz";
 import AudioBookPage from "./pages/book/audio-book";
+import ErrorBoundary from "./pages/error/ErrorBoundary";
 
 export const router = createBrowserRouter([
   {
@@ -15,9 +16,9 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <HomePage />,
-      },
-    ],
+        element: <HomePage />
+      }
+    ]
   },
   {
     path: "book",
@@ -25,7 +26,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "read",
-        element: <Outlet />,
+        element: (
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        ),
         children: [
           {
             path: "audio",
@@ -33,21 +38,21 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: ":id",
-                element: <AudioBookPage />,
-              },
-            ],
+                element: <AudioBookPage />
+              }
+            ]
           },
           {
             path: ":id",
-            element: <BookViewerPage />,
-          },
-        ],
+            element: <BookViewerPage />
+          }
+        ]
       },
       {
         path: ":id",
-        element: <BookDetailPage />,
-      },
-    ],
+        element: <BookDetailPage />
+      }
+    ]
   },
   {
     path: "quiz",
@@ -59,13 +64,13 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "",
-            element: <PresStartQuizPage />,
+            element: <PresStartQuizPage />
           },
           {
             path: ":id",
-            element: <MultipleChoicePage />,
-          },
-        ],
+            element: <MultipleChoicePage />
+          }
+        ]
       },
       {
         path: "word-completion",
@@ -73,15 +78,15 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "",
-            element: <PresStartQuizPage />,
+            element: <PresStartQuizPage />
           },
           {
             path: ":id",
-            element: <WordCompletionPage />,
-          },
-        ],
-      },
-    ],
+            element: <WordCompletionPage />
+          }
+        ]
+      }
+    ]
   },
   {
     path: "*",
@@ -89,8 +94,8 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "*",
-        element: <Page404 />,
-      },
-    ],
-  },
+        element: <Page404 />
+      }
+    ]
+  }
 ]);

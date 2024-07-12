@@ -5,23 +5,34 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useSwr } from "@/lib/swr";
+import { Transition } from "@headlessui/react";
+import { Button, Card, Progress } from "@/components";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { StartQuizDialog } from "@/sections/quiz/start-quiz-dialog";
 
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
 const BookViewerPage = () => {
   const { id } = useParams();
   const [page, setPage] = useState(1);
-  const [pdfData, setPdfData] = useState("");
+  const [pageLimit, setPageLimit] = useState(0);
+  const [pdfData, setPdfData] = useState(null);
+  const [onErrorPage, setOnErrorPage] = useState(false);
+  const [onStartQuiz, setOnStartQuiz] = useState(false);
 
-  const { data, error } = useSwr(`/book/read/${id}?page=${page}`, fetcher);
-
-  useEffect(() => {
-    if (data) {
-      setPdfData(data);
-    }
-  }, [data]);
+  const { data, error, isLoading } = useSwr(
+    `/book/read/${id}?page=${page}`,
+    fetcher
+  );
 
   const handleNext = () => {
-    setPage((prevPage) => prevPage + 1);
+    setPage((prevPage) => {
+      const nextPage = prevPage + 1;
+      if (nextPage === pageLimit) {
+        setOnStartQuiz(true);
+      }
+      return nextPage;
+    });
   };
 
   const handlePrevious = () => {
@@ -30,22 +41,64 @@ const BookViewerPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (data) {
+      setPdfData(data);
+      setPageLimit(data?.pagination?.totalPages);
+    }
+  }, [data, onErrorPage]);
+
+  const renderLoading = () => {
+    return (
+      <Transition
+        show={isLoading}
+        enter='transition-opacity duration-300'
+        enterFrom='opacity-0'
+        enterTo='opacity-100'
+        leave='transition-opacity duration-300'
+        leaveFrom='opacity-100'
+        leaveTo='opacity-0'
+      >
+        <Progress />
+      </Transition>
+    );
+  };
+
+  const disabled = page === pageLimit;
+
   if (error) return <div>Failed to load PDF file.</div>;
-  if (!pdfData) return <div>Loading...</div>;
+
+  const onErrorSecondPage = () => {
+    setOnErrorPage(true);
+  };
 
   return (
-    <div className="flex space-x-4 text-center overflow-x-auto">
-      {page > 1 && <button onClick={handlePrevious}>Previous</button>}
+    <div className='w-full h-fit flex flex-col items-center justify-center'>
       <Document
-        className="flex"
-        file={`data:application/pdf;base64,${pdfData.data}`}
+        onLoadError={onErrorSecondPage}
+        loading={renderLoading()}
+        className={`${onErrorPage ? "" : "flex"} text-center`}
+        file={pdfData ? `data:application/pdf;base64,${pdfData.data}` : null}
       >
         <Page pageNumber={1} />
-        <Page pageNumber={2} />
+        {!onErrorPage && (
+          <Page
+            className={`${onErrorPage ? "hidden" : ""}`}
+            onRenderError={onErrorSecondPage}
+            error={onErrorPage}
+            pageNumber={2}
+          />
+        )}
       </Document>
-      {pdfData.pagination.currentPage <= pdfData.pagination.totalPages && (
-        <button onClick={handleNext}>Next</button>
-      )}
+      <Card className='w-full flex flex-row justify-evenly h-10 rounded-t-md'>
+        <Button disabled={page === 1} onClick={handlePrevious} variant='ghost'>
+          <ChevronLeft />
+        </Button>
+        <Button disabled={disabled} onClick={handleNext} variant='ghost'>
+          <ChevronRight />
+        </Button>
+      </Card>
+      <StartQuizDialog open={onStartQuiz} onOpenChange={setOnStartQuiz} />
     </div>
   );
 };

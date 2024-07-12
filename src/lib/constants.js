@@ -1,4 +1,5 @@
 export const ROUTE = {
   Home: "/",
-  Book: "/book"
+  Book: "/book",
+  AudioBook: '/book/read/audio'
 };

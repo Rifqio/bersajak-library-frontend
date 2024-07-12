@@ -1,13 +1,19 @@
 import { Card, CardContent, CardTitle } from "@/components";
 import { ROUTE } from "@/lib/constants";
+import { useAudioStore } from "@/zustand";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
 const BookList = ({ id, title, author, imageUrl }) => {
+  const { isAudioEnabled } = useAudioStore();
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate(ROUTE.Book + `/${id}`);
+    if (isAudioEnabled) {
+      navigate(ROUTE.AudioBook + `/${id}`);
+    } else {
+      navigate(ROUTE.Book + `/${id}`);
+    }
   };
 
   const trimmedTitle = () => {
