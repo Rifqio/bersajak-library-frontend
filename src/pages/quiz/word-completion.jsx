@@ -48,40 +48,9 @@ const WordCompletionPage = () => {
   const [score, setScore] = useState(0);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
-
-  const commands = [
-    {
-      command: ["PEDULI", "MENEBANG", 'TINGGAL','MENANAM',],
-      callback: ({ command }) => {
-        if (command.includes("Peduli") || command.includes("peduli")) {
-          setScore(prevScore => prevScore + (100/10));
-        }
-      },
-      matchInterim: true
-    }
-  ];
-
-  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
-
-  //post data
-  const validCommands = commands.map(cmd => cmd.command).flat();
-  const isValidCommand = validCommands.some(cmd => transcript.includes(cmd.toLowerCase()));
-  const foundCommands = validCommands.filter(cmd => transcript.includes(cmd.toLowerCase()));
-  const answer = foundCommands.length > 0 ? foundCommands[0] : "";
-  const usePostQuizAnswer = (url, body) => {
-    const { mutate: validateAnswer } = usePost(url, body);
-    return validateAnswer;
-  };
-  const body = {
-    number: numberQuiz,
-    answer: answer
-  };
-  
-  const validateAnswer = usePostQuizAnswer(`/quiz/word-completion/${id}`, body);
-  console.log(transcript);
  
 
-  // fetch data
+  // FETCH SOAL
   const { data: questionResponse } = useSwr(
     `/quiz/word-completion/${id}?number=${numberQuiz}`,
     fetcher,
@@ -90,12 +59,46 @@ const WordCompletionPage = () => {
       revalidateOnFocus: false
     }
   );
+
   const questionList = questionResponse?.data;
   const totalQuestion = 10;
   const question = get(questionList, "question", "");
+  const answerList = get(questionList, "answer", "");
   const result = splitQuestion(question);
   const splitClue = result.clue.split("").map((letter) => letter.toUpperCase());
 
+  const commands = [
+    {
+      command: answerList,
+      callback: ({ command }) => {
+        if (command.includes(answerList)) {
+          setScore(prevScore => prevScore + (100/20));
+        }
+      },
+      matchInterim: true
+    }
+  ];
+
+  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
+
+  //POST ANSWER
+  const validCommands = commands.map(cmd => cmd.command).flat();
+  const isValidCommand = validCommands.some(cmd => transcript.includes(cmd.toLowerCase()));
+  const foundCommands = validCommands.filter(cmd => transcript.includes(cmd.toLowerCase()));
+  const answerData = foundCommands.length > 0 ? foundCommands[0] : "";
+  const usePostQuizAnswer = (url, body) => {
+    const { mutate: validateAnswer } = usePost(url, body);
+    return validateAnswer;
+  };
+  const body = {
+    number: numberQuiz,
+    answer: answerData
+  };
+  
+  const validateAnswer = usePostQuizAnswer(`/quiz/word-completion/${id}`, body);
+  console.log(score);
+
+  // HANDLE FUNCTION
   const handleBackButton = () => {
     setCancelQuiz(true);
   };
@@ -131,6 +134,7 @@ const WordCompletionPage = () => {
     }
   };
 
+  // TRIGGER EFFECT
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -157,7 +161,7 @@ const WordCompletionPage = () => {
     if (isValidCommand) {
       validateAnswer();
     }
-  }, [isValidCommand, validateAnswer]);
+  }, [isValidCommand]);
 
   return (
     <div className='mt-16 h-screen flex flex-col'>
