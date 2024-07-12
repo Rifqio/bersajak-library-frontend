@@ -12,7 +12,11 @@ import ErrorBoundary from "./pages/error/ErrorBoundary";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <DashboardLayout />,
+    element: (
+      <ErrorBoundary>
+        <DashboardLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         path: "/",
@@ -22,15 +26,15 @@ export const router = createBrowserRouter([
   },
   {
     path: "book",
-    element: <BookLayout />,
+    element: (
+      <ErrorBoundary>
+        <BookLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         path: "read",
-        element: (
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
-        ),
+        element: <Outlet />,
         children: [
           {
             path: "audio",
@@ -56,7 +60,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "quiz",
-    element: <QuizLayout />,
+    element: (
+      <ErrorBoundary>
+        <QuizLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         path: "multiple-choice",

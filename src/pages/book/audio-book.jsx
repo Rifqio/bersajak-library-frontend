@@ -1,37 +1,64 @@
-import { fetcher, fetcherWithRange } from "@/lib/fetcher";
+import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import { StartQuizDialog } from "@/sections/quiz/start-quiz-dialog";
 import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "react-h5-audio-player";
 import "react-h5-audio-player/lib/styles.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import SpeechRecognition, {
+  useSpeechRecognition
+} from "react-speech-recognition";
 
 const AudioBookPage = () => {
   const { id } = useParams();
   const [onPlayBookAudio, setOnPlayBookAudio] = useState(false);
   const [onPlayIntroAudio, setOnPlayIntroAudio] = useState(false);
   const [onStartQuiz, setOnStartQuiz] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const [bookFinishedAudio, setBookFinishedAudio] = useState(null);
   const introAudio = useRef(null);
   const bookAudio = useRef(null);
   const quizStartAudio = useRef(null);
 
+  const navigate = useNavigate();
   const { data } = useSwr(`/book/${id}`, fetcher);
   const { data: guideData } = useSwr(`/guide/book-read?id=${id}`, fetcher);
   const { data: bookFinished } = useSwr(bookFinishedAudio, fetcher);
-  const { data: audioData, error: audioError } = useSwr(
-    `/audio/${id}`,
-    fetcherWithRange
-  );
+  const audioUrl = data?.data?.audio_url;
 
   useEffect(() => {
     setOnPlayIntroAudio(true);
+    introAudio.current.play();
+    setIsPlayingAudio(true);
   }, [id]);
+
+  const commands = [
+    {
+      command: ["pilihan ganda", "lengkapi kata"],
+      callback: (command) => {
+        if (!isPlayingAudio) {
+          if (command === "pilihan ganda") {
+            navigate(`/quiz/multiple-choice/${id}`);
+          } else {
+            navigate(`/quiz/word-completion/${id}`);
+          }
+        }
+      },
+      isFuzzyMatch: true,
+      fuzzyMatchingThreshold: 0.2,
+      bestMatchOnly: true
+    }
+  ];
+
+  useSpeechRecognition({ commands });
 
   const onEndIntroAudio = () => {
     setOnPlayIntroAudio(false);
     setOnPlayBookAudio(true);
+    if (bookAudio.current) {
+      bookAudio.current.audio.current.play();
+    }
   };
 
   const onEndBookAudio = () => {
@@ -40,10 +67,14 @@ const AudioBookPage = () => {
     setBookFinishedAudio(`/guide/book-finished`);
   };
 
-  if (audioError) return <div>Error loading audio</div>;
-  if (!audioData) return <div>Loading...</div>;
+  useEffect(() => {
+    if (!isPlayingAudio) {
+      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
+    } else {
+      SpeechRecognition.stopListening();
+    }
+  }, [isPlayingAudio]);
 
-  const audioUrl = URL.createObjectURL(audioData);
   const introAudioUrl = guideData?.data;
   const book = data?.data;
 
@@ -53,6 +84,9 @@ const AudioBookPage = () => {
         className='hidden'
         onEnded={onEndIntroAudio}
         ref={introAudio}
+        onPlaying={() => {
+          bookAudio.current.audio.current.pause();
+        }}
         src={introAudioUrl}
         autoPlay={onPlayIntroAudio}
       />
@@ -60,6 +94,9 @@ const AudioBookPage = () => {
         ref={quizStartAudio}
         className='hidden'
         autoPlay={onStartQuiz}
+        onEnded={() => {
+          setIsPlayingAudio(false);
+        }}
         src={bookFinished?.data}
       />
       <div className='flex justify-center mb-4'>
@@ -71,9 +108,9 @@ const AudioBookPage = () => {
       </div>
 
       <AudioPlayer
+        controls
         style={onPlayIntroAudio ? { pointerEvents: "none" } : {}}
         ref={bookAudio}
-        loop={false}
         onEnded={onEndBookAudio}
         autoPlay={onPlayBookAudio}
         src={audioUrl}

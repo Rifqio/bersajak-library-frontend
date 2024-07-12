@@ -9,7 +9,7 @@ const DashboardLayout = () => {
     <Container>
       <Navbar />
       <Outlet />
-      <ColorblindPicker />
+      {/* <ColorblindPicker /> */}
       <ErrorModal />
     </Container>
   );
