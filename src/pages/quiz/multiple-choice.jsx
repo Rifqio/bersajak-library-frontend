@@ -101,19 +101,19 @@ export const MultipleChoicePage = () => {
     answer: answerData
   });
 
+  // HANDLE FUNCTION
+  const handleCheckAnswerd = (key, qeustionAnswer) => {
+    if(key === qeustionAnswer) {
+      setScore((prevScore) => prevScore + 100 / totalQuestion);
+    }
+  }
+
   const onSelectedAnswer = async (index, value) => {
     setSelectedIndex(index);
     setSelectedOption(value.key);
-    const response = await axios.post(`/quiz/multiple-choice/${id}`, {
-      answer: value.key,
-      number: numberQuiz
-    });
-    if (response?.status === 200) {
-      setScore((prevScore) => prevScore + 100 / totalQuestion);
-    }
+    handleCheckAnswerd(value.key, answer)
   };
 
-  // HANDLE FUNCTION
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
       return HOVER_COLORS[index % HOVER_COLORS.length];
@@ -230,7 +230,6 @@ export const MultipleChoicePage = () => {
   useEffect(() => {
     const playAudio = async () => {
       try {
-        console.log(stepAudio);
         if (audioIntroUrl && audioIntroRef.current && stepAudio === 1) {
           await audioIntroRef.current.play();
         }
