@@ -20,12 +20,8 @@ import { useSpeechRecognition } from "react-speech-recognition";
 import { usePost } from "@/lib/swr";
 
 function validateIndex(questionData) {
-  if (!questionData || !Array.isArray(questionData.options)) {
-    return -1;
-  }
-
-  const correctAnswer = questionData.answer || "";
-  const sanitized = questionData.options.findIndex(
+  const correctAnswer = questionData?.answer || "";
+  const sanitized = questionData?.options.findIndex(
     (option) => option.key === correctAnswer
   );
 
@@ -33,13 +29,9 @@ function validateIndex(questionData) {
 }
 
 function validateTranscript(transcript, questionData) {
-  if (!questionData || !Array.isArray(questionData.options)) {
-    return -1;
-  }
-  
-  const sanitized = transcript.trim().toLowerCase();
-  const index = questionData.options.findIndex(
-    (option) => option.key.toLowerCase() === sanitized
+  const sanitized = transcript?.charAt(0);
+  const index = questionData?.options.findIndex(
+    (option) => option.key.charAt(0) === sanitized
   );
 
   return index;
