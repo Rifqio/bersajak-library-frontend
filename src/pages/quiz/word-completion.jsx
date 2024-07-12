@@ -5,7 +5,7 @@ import { usePost, useSwr } from "@/lib/swr";
 import { useParams } from "react-router-dom";
 import { fetcher } from "@/lib/fetcher";
 import { get } from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import BooksIllustration from "../../assets/board.svg";
@@ -38,8 +38,7 @@ function splitQuestion(question) {
 
 const WordCompletionPage = () => {
   const { id } = useParams();
-  const { startListening, stopListening } =
-    useMicrophone();
+  const { startListening, stopListening } = useMicrophone();
   const { greeting, stopSpeech } = useSpeaker();
   const navigate = useNavigate();
 
@@ -48,7 +47,7 @@ const WordCompletionPage = () => {
   const [score, setScore] = useState(0);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
- 
+  const audioRef = useRef(null);
 
   // FETCH SOAL
   const { data: questionResponse } = useSwr(
@@ -72,7 +71,7 @@ const WordCompletionPage = () => {
       command: answerList,
       callback: ({ command }) => {
         if (command.includes(answerList)) {
-          setScore(prevScore => prevScore + (100/20));
+          setScore((prevScore) => prevScore + 100 / 20);
         }
       },
       matchInterim: true
@@ -82,9 +81,13 @@ const WordCompletionPage = () => {
   const { transcript, resetTranscript } = useSpeechRecognition({ commands });
 
   //POST ANSWER
-  const validCommands = commands.map(cmd => cmd.command).flat();
-  const isValidCommand = validCommands.some(cmd => transcript.includes(cmd.toLowerCase()));
-  const foundCommands = validCommands.filter(cmd => transcript.includes(cmd.toLowerCase()));
+  const validCommands = commands.map((cmd) => cmd.command).flat();
+  const isValidCommand = validCommands.some((cmd) =>
+    transcript.includes(cmd.toLowerCase())
+  );
+  const foundCommands = validCommands.filter((cmd) =>
+    transcript.includes(cmd.toLowerCase())
+  );
   const answerData = foundCommands.length > 0 ? foundCommands[0] : "";
   const usePostQuizAnswer = (url, body) => {
     const { mutate: validateAnswer } = usePost(url, body);
@@ -94,9 +97,8 @@ const WordCompletionPage = () => {
     number: numberQuiz,
     answer: answerData
   };
-  
+
   const validateAnswer = usePostQuizAnswer(`/quiz/word-completion/${id}`, body);
-  console.log(score);
 
   // HANDLE FUNCTION
   const handleBackButton = () => {
@@ -163,8 +165,43 @@ const WordCompletionPage = () => {
     }
   }, [isValidCommand]);
 
+  //AUDITO SECTION
+  const { data: scoreData } = useSwr(`/guide/score?score=${score}`, fetcher);
+  const audioUrl = scoreData?.data;
+  const onEndedSound = () => {
+    isShowScore(false);
+  };
+  useEffect(() => {
+    if (audioUrl && audioRef.current) {
+      if (isShowScore) {
+        audioRef.current
+          .play()
+          .catch((error) =>
+            console.error("Error playing greeting audio:", error)
+          );
+      }
+    }
+  }, [audioUrl, isShowScore]);
+
+  const AudioSection = () => {
+    return (
+      <>
+        <audio
+          autoPlay={isShowScore}
+          ref={audioRef}
+          onPlay={() => setIsShowScore(true)}
+          onEnded={onEndedSound}
+          src={audioUrl}
+          className='hidden'
+        />
+      </>
+    );
+  };
+
+  // PRESENTATION RENDER
   return (
     <div className='mt-16 h-screen flex flex-col'>
+      {AudioSection()}
       <ToastContainer />
       <Progress
         value={(countdown / 20) * 100}
