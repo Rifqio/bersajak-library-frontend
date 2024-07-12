@@ -11,6 +11,7 @@ import { BookListLoading } from "@/sections/book/book-list-loading";
 import SpeechRecognition, {
   useSpeechRecognition
 } from "react-speech-recognition";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const [soundModal, setSoundModal] = useState(false);
@@ -21,7 +22,6 @@ const HomePage = () => {
   const [navigationUrl, setNavigationUrl] = useState(null);
   const [bookListUrl, setBookListUrl] = useState(null);
   const [bookChooseUrl, setBookChooseUrl] = useState(null);
-  const [bookListInView, setBookListInView] = useState(false);
 
   const { data: navigationData } = useSwr(navigationUrl, fetcher);
   const { data, isLoading } = useSwr("/book/list", fetcher);
@@ -31,10 +31,12 @@ const HomePage = () => {
 
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
 
+  const navigate = useNavigate();
   const audioRef = useRef(null);
   const audioNavigationRef = useRef(null);
   const bookListRef = useRef(null);
-  const scrollAudioRef = useRef(null);
+  const chooseBookAudioRef = useRef(null);
+  const availableBookAudioRef = useRef(null);
   const audioUrl = homeData?.data?.audio;
 
   useEffect(() => {
@@ -50,15 +52,27 @@ const HomePage = () => {
     }
   }, [audioUrl, queryHome]);
 
+  useEffect(() => {
+    if (isAudioEnabled && !isAudioPlaying) {
+      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
+    }
+    if (isAudioPlaying) {
+      SpeechRecognition.stopListening();
+    }
+  }, [isAudioPlaying, audioRef, isAudioEnabled]);
+
   const commands = [
     {
       command: ["ya", "tidak"],
       callback: (command) => {
+        console.log(command);
         if (firstVisit || soundModal) {
-          if (command === "ya") {
+          if (command === "ya" || command.includes("ya")) {
             onEnableAudio();
-          } else {
+          } else if (command === "tidak" || command.includes("tidak")) {
             onDisabledAudio();
+          } else {
+            console.error("Command not found");
           }
         }
       },
@@ -93,11 +107,33 @@ const HomePage = () => {
       callback: () => {
         if (!isAudioPlaying) {
           window.scrollTo(0, document.body.scrollHeight);
+          chooseBookAudioRef.current.play();
           handleSelectBooks();
         }
       },
       isFuzzyMatch: true,
       fuzzyMatchingThreshold: 0.2,
+      bestMatchOnly: true
+    },
+    // ! Hardcoded at the momment due to prototype
+    {
+      command: ["suara gemuruh itu", "hutan larangan", "membuat ekoenzim", "wabah penyakit"],
+      callback: (command) => {
+        console.log(command);
+        if (!isAudioPlaying || !onPlayGreetings) {
+          if (command === "suara gemuruh itu") {
+            navigate("/book/read/audio/2")
+          } else if (command === "hutan larangan") {
+            navigate("/book/read/audio/3")
+          } else if (command.includes("membuat")) {
+            navigate("/book/read/audio/4")
+          } else if (command.includes("wabah")) {
+            navigate("/book/read/audio/5")
+          }
+        }
+      },
+      isFuzzyMatch: true,
+      // fuzzyMatchingThreshold: 0.2,
       bestMatchOnly: true
     }
   ];
@@ -106,7 +142,7 @@ const HomePage = () => {
 
   useEffect(() => {
     const firstCondition = navigationData?.data?.audio && audioNavigationRef.current;
-    const secondCondition = !onPlayGreetings && stepAudio === 2;
+    const secondCondition = !onPlayGreetings;
 
     if (firstCondition && secondCondition) {
       setIsAudioPlaying(true);
@@ -124,49 +160,6 @@ const HomePage = () => {
       }
     };
   }, [navigationData, onPlayGreetings, stepAudio]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setBookListInView(true);
-        } else {
-          setBookListInView(false);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (bookListRef.current) {
-      observer.observe(bookListRef.current);
-    }
-
-    return () => {
-      if (bookListRef.current) {
-        observer.unobserve(bookListRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (stepAudio === 3 || bookListInView && scrollAudioRef.current) {
-      setIsAudioPlaying(true);
-      scrollAudioRef.current
-        .play()
-        .catch((error) => console.error("Error playing scroll audio:", error));
-    } else if (scrollAudioRef.current) {
-      setIsAudioPlaying(false);
-      scrollAudioRef.current.pause();
-    }
-  }, [bookListInView]);
-
-  useEffect(() => {
-    if (isAudioPlaying) {
-      SpeechRecognition.stopListening();
-    } else if (!isAudioPlaying && isAudioEnabled) {
-      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
-    }
-  }, [isAudioPlaying, isAudioEnabled]);
 
   const onEnableAudio = () => {
     setQueryHome("isAudioEnabled=true");
@@ -191,11 +184,12 @@ const HomePage = () => {
   const handleSelectBooks = () => {
     setBookListUrl("/guide/book-list");
     setIsAudioPlaying(true);
-    setStepAudio(3);
   };
 
   const onPlayChooseBook = () => {
-    setBookChooseUrl("/guide/any?=book-choose");
+    setIsAudioPlaying(true);
+    setBookChooseUrl("/guide/any?type=book-choose");
+    availableBookAudioRef.current.play();
   };
 
   const HeroSection = () => {
@@ -265,6 +259,7 @@ const HomePage = () => {
           autoPlay={firstVisit && isAudioEnabled}
           ref={audioRef}
           onPlay={() => {
+            SpeechRecognition.stopListening();
             setIsAudioPlaying(true);
             setOnPlayGreetings(true);
           }}
@@ -276,23 +271,22 @@ const HomePage = () => {
           src={navigationData?.data?.audio}
           ref={audioNavigationRef}
           autoPlay={stepAudio === 2 && isAudioPlaying}
-          // onPlay={() => setIsAudioPlaying(true)}
-          onEnded={handleSelectBooks}
+          onEnded={() => {
+            setIsAudioPlaying(false);
+          }}
           className='hidden'
         />
         <audio
           onEnded={() => {
-            setStepAudio(4);
             onPlayChooseBook();
           }}
-          autoPlay={stepAudio === 3}
-          ref={scrollAudioRef}
+          ref={chooseBookAudioRef}
           src={bookListAudio?.data?.audio}
           className='hidden'
         />
         <audio
-          src={chooseBookData?.data?.audio}
-          autoPlay={stepAudio === 4 && isAudioPlaying}
+          ref={availableBookAudioRef}
+          src={chooseBookData?.data}
           onEnded={() => setIsAudioPlaying(false)}
           className='hidden'
         />
