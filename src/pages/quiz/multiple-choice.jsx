@@ -7,17 +7,15 @@ import { CircleCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMicrophone } from "@/hooks";
-import useSWR from "swr";
+import { usePost, useSwr } from "@/lib/swr";
 import { get } from "lodash";
 import { fetcher } from "@/lib/fetcher";
-import { MOCK_QUESTIONS } from "@/lib/mock";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ScoreDialog from "@/sections/quiz/score-dialog";
 import axios from "@/lib/axios";
 import { HOVER_COLORS, OPTION_COLORS } from "@/lib/theme";
 import { useSpeechRecognition } from "react-speech-recognition";
-import { usePost } from "@/lib/swr";
 
 function validateIndex(questionData) {
   const correctAnswer = questionData?.answer || "";
@@ -50,10 +48,11 @@ export const MultipleChoicePage = () => {
   const [selectedOption, setSelectedOption] = useState("");
   const [numberQuiz, setNumberQuiz] = useState(1);
   const [score, setScore] = useState(0);
+  const [stepAudio, setStepAudio] = useState(1);
   const audioRef = useRef(null);
 
   // FETCH QUESTION
-  const { data: questionResponse } = useSWR(
+  const { data: questionResponse } = useSwr(
     `/quiz/multiple-choice/${id}?number=${numberQuiz}`,
     fetcher,
     {
@@ -150,6 +149,7 @@ export const MultipleChoicePage = () => {
         stopListening();
         resetTranscript();
         setIsShowScore(true);
+        setStepAudio(3);  
       }, 3000);
     } else {
       toast.success(`skor anda adalah ${roundedScore}`, {
@@ -186,18 +186,12 @@ export const MultipleChoicePage = () => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
     }
-
-    if (countdown > 30) {
-      if (audioUrl && audioRef.current) {
-        audioRef.current.play().catch((error) => {
-          console.error("Error playing the audio:", error);
-        });
-      }
-    } else if (countdown <= 15 && countdown > 0) {
-      startListening();
-    } if (countdown === 0) {
-      handleNextQuiz();
-    }
+     if (countdown <= 20 && countdown > 0) {
+       startListening();
+     }
+     if (countdown === 0 && !isShowScore) {
+       handleNextQuiz();
+     }
 
     return () => {
       clearInterval(timer);
@@ -213,6 +207,85 @@ export const MultipleChoicePage = () => {
       );
     }
   }, [transcript]);
+
+  //AUDITO SECTION
+  const onEndedGreeting = () => {
+    setStepAudio(2);
+  };
+  const onEnndedScored = () => {
+    setStepAudio(4);
+  };
+
+  const audioScoreRef = useRef(null);
+  const audioIntroRef = useRef(null);
+  const audioOutroRef = useRef(null);
+
+  const { data: introData } = useSwr(`/guide/games?type=intro`, fetcher);
+  const audioIntroUrl = introData?.data;
+  const { data: outroData } = useSwr(`/guide/games?type=outro`, fetcher);
+  const audioOutroUrl = outroData?.data;
+  const { data: scoreData } = useSwr(`/guide/score?score=${score}`, fetcher);
+  const audioScoreUrl = scoreData?.data;
+
+  useEffect(() => {
+    const playAudio = async () => {
+      try {
+        console.log(stepAudio);
+        if (audioIntroUrl && audioIntroRef.current && stepAudio === 1) {
+          await audioIntroRef.current.play();
+        }
+  
+        if (!isShowScore && audioUrl && audioRef.current && stepAudio === 2) {
+          await audioRef.current.play();
+        }
+  
+        if (isShowScore && audioScoreUrl && audioScoreRef.current && stepAudio === 3) {
+          await audioScoreRef.current.play();
+        }
+  
+        if (isShowScore && audioOutroUrl && audioOutroRef.current && stepAudio === 4) {
+          await audioOutroRef.current.play();
+        }
+      } catch (error) {
+        console.error("Error playing audio:", error);
+      }
+    };
+  
+    playAudio();
+  }, [audioUrl, audioOutroUrl, audioIntroUrl, audioScoreUrl, isShowScore, stepAudio]);
+
+  const AudioSection = () => {
+    return (
+      <>
+        <audio
+          autoPlay={stepAudio === 1}
+          ref={audioIntroRef}
+          onEnded={onEndedGreeting}
+          src={audioIntroUrl}
+          className='hidden'
+        />
+        <audio
+          autoPlay={stepAudio === 2}
+          ref={audioRef}
+          src={audioUrl}
+          className='hidden'
+        />
+        <audio
+          autoPlay={stepAudio === 3}
+          ref={audioScoreRef}
+          onEnded={onEnndedScored}
+          src={audioScoreUrl}
+          className='hidden'
+        />
+        <audio
+          autoPlay={stepAudio === 4}
+          ref={audioOutroRef}
+          src={audioOutroUrl}
+          className='hidden'
+        />
+      </>
+    );
+  };
 
   // RENDER FUNCTION
   const renderCheckmark = (index) => {
@@ -230,7 +303,7 @@ export const MultipleChoicePage = () => {
 
   return (
     <div className='mt-16 h-screen flex flex-col'>
-      {audioUrl && (
+      {/* {audioUrl && (
         <audio
           ref={audioRef}
           autoPlay
@@ -238,7 +311,8 @@ export const MultipleChoicePage = () => {
           src={audioUrl}
           className='hidden'
         />
-      )}
+      )} */}
+      {AudioSection()}
       <ToastContainer />
       <Progress
         value={(countdown / 40) * 100}
