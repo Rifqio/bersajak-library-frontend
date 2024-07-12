@@ -16,20 +16,30 @@ import "react-toastify/dist/ReactToastify.css";
 import ScoreDialog from "@/sections/quiz/score-dialog";
 import axios from "@/lib/axios";
 import { HOVER_COLORS, OPTION_COLORS } from "@/lib/theme";
+import { useSpeechRecognition } from "react-speech-recognition";
+import { usePost } from "@/lib/swr";
 
 function validateIndex(questionData) {
-  const correctAnswer = questionData?.answer || "";
-  const sanitized = questionData?.options.findIndex(
-    (option) => option.option === correctAnswer
+  if (!questionData || !Array.isArray(questionData.options)) {
+    return -1;
+  }
+
+  const correctAnswer = questionData.answer || "";
+  const sanitized = questionData.options.findIndex(
+    (option) => option.key === correctAnswer
   );
 
   return sanitized;
 }
 
 function validateTranscript(transcript, questionData) {
-  const sanitized = transcript?.charAt(0);
-  const index = questionData?.options.findIndex(
-    (option) => option.option.charAt(0) === sanitized
+  if (!questionData || !Array.isArray(questionData.options)) {
+    return -1;
+  }
+  
+  const sanitized = transcript.trim().toLowerCase();
+  const index = questionData.options.findIndex(
+    (option) => option.key.toLowerCase() === sanitized
   );
 
   return index;
@@ -38,7 +48,8 @@ function validateTranscript(transcript, questionData) {
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { transcript, resetTranscript, startListening, stopListening } = useMicrophone();
+  const { startListening, stopListening } =
+    useMicrophone();
 
   const [countdown, setCountdown] = useState(40);
   const [cancelQuiz, setCancelQuiz] = useState(false);
@@ -49,7 +60,7 @@ export const MultipleChoicePage = () => {
   const [score, setScore] = useState(0);
   const audioRef = useRef(null);
 
-  // fetch data
+  // FETCH QUESTION
   const { data: questionResponse } = useSWR(
     `/quiz/multiple-choice/${id}?number=${numberQuiz}`,
     fetcher,
@@ -59,13 +70,59 @@ export const MultipleChoicePage = () => {
     }
   );
 
-  const questionList = questionResponse?.data || MOCK_QUESTIONS[numberQuiz];
+  const questionList = questionResponse?.data;
   const audioUrl = questionResponse?.data?.question_audio_url || "";
   const totalQuestion = 5;
-
   const optionList = get(questionList, "options", []);
+  const answer = get(questionList, "answer", "");
   const question = get(questionList, "question", "");
+  const keys = optionList.map(item => item.key);
+  const commands = [
+    {
+      command: keys,
+      callback: ({ command }) => {
+        if (command.includes(answer)) {
+          setScore((prevScore) => prevScore + 100 / totalQuestion);
+        }
+      },
+      matchInterim: true
+    }
+  ];
 
+  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
+
+
+  // POST ANSWER
+  const validCommands = commands.map((cmd) => cmd.command).flat();
+  const isValidCommand = validCommands.some((cmd) =>
+    transcript.includes(cmd.toLowerCase())
+  );
+  const foundCommands = validCommands.filter((cmd) =>
+    transcript.includes(cmd.toLowerCase())
+  );
+  const answerData = foundCommands.length > 0 ? foundCommands[0] : "";
+  const usePostQuizAnswer = (url, body) => {
+    const { mutate: validateAnswer } = usePost(url, body);
+    return validateAnswer;
+  };
+  const validateAnswer = usePostQuizAnswer(`/quiz/multiple-choice/${id}`, {
+    number: numberQuiz,
+    answer: answerData
+  });
+
+  const onSelectedAnswer = async (index, value) => {
+    setSelectedIndex(index);
+    setSelectedOption(value.key);
+    const response = await axios.post(`/quiz/multiple-choice/${id}`, {
+      answer: value.key,
+      number: numberQuiz
+    });
+    if (response?.status === 200) {
+      setScore((prevScore) => prevScore + 100 / totalQuestion);
+    }
+  };
+
+  // HANDLE FUNCTION
   const getBackgroundColor = (index, isHovered) => {
     if (selectedIndex === index) {
       return HOVER_COLORS[index % HOVER_COLORS.length];
@@ -84,34 +141,6 @@ export const MultipleChoicePage = () => {
     e.currentTarget.style.backgroundColor = getBackgroundColor(index, false);
   };
 
-  const onSelectedAnswer = async (index, value) => {
-    setSelectedIndex(index);
-    setSelectedOption(value.key);
-
-    const response = await axios.post(`/quiz/multiple-choice/${id}`, {
-      answer: value.key,
-      number: numberQuiz
-    });
-
-    if (response?.status === 200) {
-      setScore((prevScore) => prevScore + 100 / totalQuestion);
-      toast.success(`Skor anda adalah ${score}`, {
-        position: "top-center",
-        autoClose: 1000,
-        pauseOnHover: false
-      });
-    } else {
-      setScore((prevScore) => prevScore - 100 / totalQuestion);
-      toast.error(`Maaf jawaban kamu salah`, {
-        position: "top-center",
-        autoClose: 1000,
-        pauseOnHover: false
-      });
-    }
-
-    setCountdown(0);
-  };
-
   const handleBackButton = () => {
     setCancelQuiz(true);
   };
@@ -121,7 +150,8 @@ export const MultipleChoicePage = () => {
   };
 
   const handleNextQuiz = () => {
-    if (numberQuiz >= totalQuestion) {
+    const roundedScore = score.toFixed(1);
+    if (numberQuiz >= totalQuestion - 1) {
       setTimeout(() => {
         setSelectedIndex("");
         setSelectedOption("");
@@ -130,6 +160,11 @@ export const MultipleChoicePage = () => {
         setIsShowScore(true);
       }, 3000);
     } else {
+      toast.success(`skor anda adalah ${roundedScore}`, {
+        position: "top-center",
+        autoClose: 1000,
+        pauseOnHover: false,
+      });
       setTimeout(() => {
         setCountdown(40);
         setSelectedIndex("");
@@ -145,6 +180,49 @@ export const MultipleChoicePage = () => {
     navigate(ROUTE.Home);
   };
 
+  // TRIGGER EFFECT
+  useEffect(() => {
+    if (isValidCommand) {
+      validateAnswer();
+    }
+  }, [isValidCommand]);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+    }
+
+    if (countdown > 30) {
+      if (audioUrl && audioRef.current) {
+        audioRef.current.play().catch((error) => {
+          console.error("Error playing the audio:", error);
+        });
+      }
+    } else if (countdown <= 15 && countdown > 0) {
+      startListening();
+    } if (countdown === 0) {
+      handleNextQuiz();
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [countdown, startListening]);
+
+  useEffect(() => {
+    if (transcript.includes(answer)) {
+      setSelectedIndex(validateIndex(questionList));
+    } else {
+      setSelectedIndex(
+        validateTranscript(transcript, questionList)
+      );
+    }
+  }, [transcript]);
+
+  // RENDER FUNCTION
   const renderCheckmark = (index) => {
     if (selectedIndex === index) {
       return (
@@ -157,43 +235,6 @@ export const MultipleChoicePage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (transcript.includes(answer)) {
-  //     setSelectedIndex(validateIndex(MOCK_QUESTIONS[numberQuiz]));
-  //     setScore((prevScore) => prevScore + 100 / totalQuestion);
-  //   } else {
-  //     setSelectedIndex(
-  //       validateTranscript(transcript, MOCK_QUESTIONS[numberQuiz])
-  //     );
-  //   }
-  // }, [transcript]);
-
-  useEffect(() => {
-    if (audioUrl && audioRef.current) {
-      audioRef.current.play().catch((error) => {
-        console.error("Error playing the audio:", error);
-      });
-    }
-  }, [audioUrl]);
-
-  useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
-    }
-
-    if (countdown <= 20 && countdown > 0) {
-      startListening();
-    } else if (countdown === 0) {
-      handleNextQuiz();
-    }
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [countdown, startListening]);
 
   return (
     <div className='mt-16 h-screen flex flex-col'>
