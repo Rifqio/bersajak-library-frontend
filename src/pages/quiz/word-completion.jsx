@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import ScoreDialog from "@/sections/quiz/score-dialog";
+import { useSpeechRecognition } from "react-speech-recognition";
 
 const buttonView = {
   width: "100px",
@@ -37,7 +38,7 @@ function splitQuestion(question) {
 
 const WordCompletionPage = () => {
   const { id } = useParams();
-  const { transcript, startListening, stopListening, resetTranscript } =
+  const { startListening, stopListening } =
     useMicrophone();
   const { greeting, stopSpeech } = useSpeaker();
   const navigate = useNavigate();
@@ -48,15 +49,37 @@ const WordCompletionPage = () => {
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
+  const commands = [
+    {
+      command: ["PEDULI", "MENEBANG", 'TINGGAL','MENANAM',],
+      callback: ({ command }) => {
+        if (command.includes("Peduli") || command.includes("peduli")) {
+          setScore(prevScore => prevScore + (100/10));
+        }
+      },
+      matchInterim: true
+    }
+  ];
+
+  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
+
   //post data
+  const validCommands = commands.map(cmd => cmd.command).flat();
+  const isValidCommand = validCommands.some(cmd => transcript.includes(cmd.toLowerCase()));
+  const foundCommands = validCommands.filter(cmd => transcript.includes(cmd.toLowerCase()));
+  const answer = foundCommands.length > 0 ? foundCommands[0] : "";
+  const usePostQuizAnswer = (url, body) => {
+    const { mutate: validateAnswer } = usePost(url, body);
+    return validateAnswer;
+  };
   const body = {
     number: numberQuiz,
-    answer: transcript
+    answer: answer
   };
-  const { mutate: validateAnswer } = usePost(
-    `/quiz/word-completion/${id}`,
-    body
-  );
+  
+  const validateAnswer = usePostQuizAnswer(`/quiz/word-completion/${id}`, body);
+  console.log(transcript);
+ 
 
   // fetch data
   const { data: questionResponse } = useSwr(
@@ -117,7 +140,7 @@ const WordCompletionPage = () => {
     }
 
     if (countdown > 10) {
-      greeting(result.question, 2);
+      greeting(result.question, 1);
     } else if (countdown <= 10 && countdown > 0) {
       stopSpeech();
       startListening();
@@ -131,14 +154,10 @@ const WordCompletionPage = () => {
   }, [countdown, startListening, stopSpeech]);
 
   useEffect(() => {
-    if (countdown <= 10 && countdown > 0) {
-      validateAnswer().then(response => {
-        if (response.status === 200) {
-          setScore(prevScore => prevScore + (100/10));
-        }
-      });
+    if (isValidCommand) {
+      validateAnswer();
     }
-  }, [transcript, numberQuiz, countdown, id, validateAnswer]);
+  }, [isValidCommand, validateAnswer]);
 
   return (
     <div className='mt-16 h-screen flex flex-col'>
