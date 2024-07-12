@@ -8,12 +8,17 @@ import { get } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
-import BooksIllustration from "../../assets/books.svg";
+import BooksIllustration from "../../assets/board.svg";
 import { CancelDialog } from "@/sections/quiz";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import ScoreDialog from "@/sections/quiz/score-dialog";
+
+const buttonView = {
+  width: "100px",
+  height: "100px"
+};
 
 function splitQuestion(question) {
   const clueMatch = question.match(/\b\w*_\w*\b/);
@@ -43,12 +48,15 @@ const WordCompletionPage = () => {
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
-  //post data  
+  //post data
   const body = {
     number: numberQuiz,
     answer: transcript
-  }
-  const { mutate: validateAnswer } = usePost(`/quiz/word-completion/${id}`, body);
+  };
+  const { mutate: validateAnswer } = usePost(
+    `/quiz/word-completion/${id}`,
+    body
+  );
 
   // fetch data
   const { data: questionResponse } = useSwr(
@@ -124,7 +132,11 @@ const WordCompletionPage = () => {
 
   useEffect(() => {
     if (countdown <= 10 && countdown > 0) {
-      validateAnswer();
+      validateAnswer().then(response => {
+        if (response.status === 200) {
+          setScore(prevScore => prevScore + (100/10));
+        }
+      });
     }
   }, [transcript, numberQuiz, countdown, id, validateAnswer]);
 
@@ -135,36 +147,72 @@ const WordCompletionPage = () => {
         value={(countdown / 20) * 100}
         className='w-full fixed top-0 left-0 rounded-none h-2 bg-green-500'
       />
-      <div className='text-center pb-4'>
-        <h1 className='text-4xl text-white font-poppins font-medium'>
-          {result.question}
-        </h1>
+      <div style={{ padding: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "20px"
+          }}
+        >
+          <div style={buttonView}>
+            <Button
+              onClick={handleBackButton}
+              className='bg-red-500 hover:bg-red-700 font-poppins font-bold text-white'
+              style={{ width: "200px" }}
+            >
+              Kembali
+            </Button>
+          </div>
+          <div>
+            <div
+              className='flex flex-col items-center justify-center h-screen'
+              style={{ marginTop: "-8rem" }}
+            >
+              <div className='relative'>
+                <img
+                  src={BooksIllustration}
+                  alt='Books Illustration'
+                  className='mx-auto'
+                  style={{ maxWidth: "100%", height: "500px" }}
+                />
+                <h1
+                  className='text-4xl text-white font-poppins font-medium absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center'
+                  style={{ top: "calc(50% - 120px)" }}
+                >
+                  {result.question}
+                </h1>
+                <div className='text-center pt-2' style={{ marginTop: "10px" }}>
+                  {splitClue.map((letter, index) => (
+                    <input
+                      key={index}
+                      type='text'
+                      className='text-center drop-shadow-md w-12 h-12 bg-green-500 text-white font-poppins font-semibold text-2xl rounded-lg mx-2'
+                      style={{ border: "none" }}
+                      value={letter}
+                      readOnly
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ width: "100px", height: "100px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%"
+              }}
+            >
+              <div className='bg-black text-white font-poppins font-bold text-xl p-4 rounded'>
+                Score: {score}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className='flex justify-center items-center pb-4 pt-4'>
-        <img
-          src={BooksIllustration}
-          alt='Books Illustration'
-          style={{ width: "600px", height: "400px" }}
-        />
-      </div>
-      <div className='text-center pt-4'>
-        {splitClue.map((letter, index) => (
-          <input
-            key={index}
-            type='text'
-            className='text-center drop-shadow-md w-12 h-12 bg-green-500 text-white font-poppins font-semibold text-2xl rounded-lg mx-2'
-            style={{ border: "none" }}
-            value={letter}
-            readOnly
-          />
-        ))}
-      </div>
-      <Button
-        onClick={handleBackButton}
-        className='bg-red-500 mt-8 hover:bg-red-700 font-poppins font-bold text-white'
-      >
-        Kembali
-      </Button>
       <CancelDialog
         onOpen={cancelQuiz}
         onOpenChange={setCancelQuiz}

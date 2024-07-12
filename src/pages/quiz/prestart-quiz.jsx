@@ -3,7 +3,7 @@ import { useSpeaker, useMicrophone } from "@/hooks";
 import { useEffect, useState } from "react";
 import { Button, Progress } from "@/components";
 import { useNavigate } from "react-router-dom";
-import BooksIllustration from "../../assets/books.svg";
+import BooksIllustration from "../../assets/board.svg";
 
 const PrestartQuizPage = () => {
   const { transcript, startListening, stopListening, resetTranscript } =
@@ -47,30 +47,39 @@ const PrestartQuizPage = () => {
   }, [transcript]);
 
   return (
-    <div className="mt-16 h-screen flex flex-col">
+    <div className='mt-16 h-screen flex flex-col'>
       <Progress
         value={(countdown / 10) * 100}
-        className="w-full fixed top-0 left-0 rounded-none h-2 bg-green-500"
+        className='w-full fixed top-0 left-0 rounded-none h-2 bg-green-500'
       />
-      <div className="text-center pb-4">
-        <h1 className="text-4xl text-white font-poppins font-medium">
-          Apakah Kamu Siap Memulai Quiz?
-        </h1>
-      </div>
-      <div className='flex justify-center items-center pb-4 pt-4'>
-        <img
-          src={BooksIllustration}
-          alt='Books Illustration'
-          style={{ width: "600px", height: "400px" }}
-        />
-      </div>
-
-      <Button
-        onClick={HandleStartQuiz}
-        className="bg-red-500 mt-20 hover:bg-red-700 font-poppins font-bold text-white"
+      <div
+        className='flex flex-col items-center justify-center h-screen'
+        style={{ marginTop: "-8rem" }}
       >
-        Mulai
-      </Button>
+        <div className='relative'>
+          <img
+            src={BooksIllustration}
+            alt='Books Illustration'
+            className='mx-auto'
+            style={{ maxWidth: "100%", height: "500px" }}
+          />
+          <h1
+            className='text-4xl text-white font-poppins font-medium absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center'
+            style={{ top: "calc(50% - 60px)" }}
+          >
+            Apakah Kamu Siap Memulai Quiz?
+          </h1>
+          <div className='absolute left-1/2 transform -translate-x-1/2 bottom-10'>
+            <Button
+              onClick={HandleStartQuiz}
+              className='bg-red-500 hover:bg-red-700 font-poppins font-bold text-white'
+              style={{ width: "200px" }}
+            >
+              Mulai
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
