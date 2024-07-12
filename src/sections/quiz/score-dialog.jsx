@@ -7,13 +7,16 @@ import {
     DialogTitle,
     DialogFooter,
   } from "@/components";
+import { ROUTE } from "@/lib/constants";
   import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
   
   const ScoreDialog = ({ onOpen, onBack, score }) => {
-    const roundedScore = score.toFixed(1);
+    const navigate = useNavigate();
+    const roundedScore = score.toFixed(0);
 
-    const handleReload = () => {
-      window.location.reload();
+    const handleGoTo = () => {
+      navigate(ROUTE.Home);
     };
 
     return (
@@ -26,11 +29,11 @@ import {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={handleReload} variant="destructive">
-              Ulangi
+            <Button onClick={() => handleGoTo()} variant="destructive">
+              Selesai
             </Button>
             <Button onClick={() => onBack()} variant="destructive">
-              Kemabli
+              Pilih Buku
             </Button>
           </DialogFooter>
         </DialogContent>

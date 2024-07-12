@@ -43,8 +43,9 @@ const WordCompletionPage = () => {
   const navigate = useNavigate();
 
   const [countdown, setCountdown] = useState(20);
-  const [numberQuiz, setNumberQuiz] = useState(1);
+  const [numberQuiz, setNumberQuiz] = useState(9);
   const [score, setScore] = useState(0);
+  const [stepAudio, setStepAudio] = useState(1);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
@@ -177,6 +178,13 @@ const WordCompletionPage = () => {
   }, [isValidCommand]);
 
   //AUDITO SECTION
+  const onEndedGreeting = () => {
+    setStepAudio(2);
+  };
+  const onEnndedScored = () => {
+    setStepAudio(3);
+  };
+
   const audioRef = useRef(null);
   const audioIntroRef = useRef(null);
   const audioOutroRef = useRef(null);
@@ -187,18 +195,16 @@ const WordCompletionPage = () => {
   const audioOutroUrl = outroData?.data;
   const { data: scoreData } = useSwr(`/guide/score?score=${score}`, fetcher);
   const audioUrl = scoreData?.data;
-  const onEndedSound = () => {
-    isShowScore(false);
-  };
 
   useEffect(() => {
     const playAudio = async () => {
       try {
-        if (audioUrl && audioRef.current) {
+        if (isShowScore && audioUrl && audioRef.current && stepAudio === 2) {
           await audioRef.current.play();
         }
-        if (isShowScore && audioOutroUrl && audioOutroUrl.current) {
-          await audioOutroUrl.current.play();
+  
+        if (isShowScore && audioOutroUrl && stepAudio === 3 && audioOutroRef.current) {
+          await audioOutroRef.current.play();
         }
       } catch (error) {
         console.error("Error playing audio:", error);
@@ -206,30 +212,28 @@ const WordCompletionPage = () => {
     };
   
     playAudio();
-  }, [audioUrl, audioOutroUrl, isShowScore]);
+  }, [audioUrl, audioOutroUrl, isShowScore, stepAudio]);
 
   const AudioSection = () => {
     return (
       <>
         <audio
-          autoPlay={isShowScore}
-          ref={audioRef}
-          onPlay={() => setIsShowScore(true)}
-          onEnded={onEndedSound}
-          src={audioUrl}
-          className='hidden'
-        />
-        <audio
-          autoPlay={true}
+          autoPlay={stepAudio === 1}
           ref={audioIntroRef}
-          onEnded={onEndedSound}
+          onEnded={onEndedGreeting}
           src={audioIntroUrl}
           className='hidden'
         />
         <audio
-          autoPlay={true}
+          autoPlay={stepAudio === 2}
+          ref={audioRef}
+          onEnded={onEnndedScored}
+          src={audioUrl}
+          className='hidden'
+        />
+        <audio
+          autoPlay={stepAudio === 3}
           ref={audioOutroRef}
-          onEnded={onEndedSound}
           src={audioOutroUrl}
           className='hidden'
         />
