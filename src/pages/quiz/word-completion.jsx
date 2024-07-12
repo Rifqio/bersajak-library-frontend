@@ -43,7 +43,7 @@ const WordCompletionPage = () => {
   const navigate = useNavigate();
 
   const [countdown, setCountdown] = useState(20);
-  const [numberQuiz, setNumberQuiz] = useState(9);
+  const [numberQuiz, setNumberQuiz] = useState(1);
   const [score, setScore] = useState(0);
   const [stepAudio, setStepAudio] = useState(1);
   const [isShowScore, setIsShowScore] = useState(false);
