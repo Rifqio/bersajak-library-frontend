@@ -47,7 +47,6 @@ const WordCompletionPage = () => {
   const [score, setScore] = useState(0);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
-  const audioRef = useRef(null);
 
   // FETCH SOAL
   const { data: questionResponse } = useSwr(
@@ -145,12 +144,24 @@ const WordCompletionPage = () => {
       }, 1000);
     }
 
-    if (countdown > 10) {
+    if (countdown === 19) {
+      if (audioIntroUrl && audioIntroRef.current) {
+        if (numberQuiz === 1) {
+          audioIntroRef.current
+            .play()
+            .catch((error) =>
+              console.error("Error playing greeting audio:", error)
+            );
+        }
+      }
+    }
+
+    if (countdown > 10 && countdown < 16) {
       greeting(result.question, 1);
     } else if (countdown <= 10 && countdown > 0) {
       stopSpeech();
       startListening();
-    } else {
+    } if (countdown === 0) {
       handleNextQuiz();
     }
 
@@ -166,22 +177,36 @@ const WordCompletionPage = () => {
   }, [isValidCommand]);
 
   //AUDITO SECTION
+  const audioRef = useRef(null);
+  const audioIntroRef = useRef(null);
+  const audioOutroRef = useRef(null);
+
+  const { data: introData } = useSwr(`/guide/games?type=intro`, fetcher);
+  const audioIntroUrl = introData?.data;
+  const { data: outroData } = useSwr(`/guide/games?type=outro`, fetcher);
+  const audioOutroUrl = outroData?.data;
   const { data: scoreData } = useSwr(`/guide/score?score=${score}`, fetcher);
   const audioUrl = scoreData?.data;
   const onEndedSound = () => {
     isShowScore(false);
   };
+
   useEffect(() => {
-    if (audioUrl && audioRef.current) {
-      if (isShowScore) {
-        audioRef.current
-          .play()
-          .catch((error) =>
-            console.error("Error playing greeting audio:", error)
-          );
+    const playAudio = async () => {
+      try {
+        if (audioUrl && audioRef.current) {
+          await audioRef.current.play();
+        }
+        if (isShowScore && audioOutroUrl && audioOutroUrl.current) {
+          await audioOutroUrl.current.play();
+        }
+      } catch (error) {
+        console.error("Error playing audio:", error);
       }
-    }
-  }, [audioUrl, isShowScore]);
+    };
+  
+    playAudio();
+  }, [audioUrl, audioOutroUrl, isShowScore]);
 
   const AudioSection = () => {
     return (
@@ -192,6 +217,20 @@ const WordCompletionPage = () => {
           onPlay={() => setIsShowScore(true)}
           onEnded={onEndedSound}
           src={audioUrl}
+          className='hidden'
+        />
+        <audio
+          autoPlay={true}
+          ref={audioIntroRef}
+          onEnded={onEndedSound}
+          src={audioIntroUrl}
+          className='hidden'
+        />
+        <audio
+          autoPlay={true}
+          ref={audioOutroRef}
+          onEnded={onEndedSound}
+          src={audioOutroUrl}
           className='hidden'
         />
       </>
