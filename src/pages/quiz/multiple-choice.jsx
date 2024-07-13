@@ -19,6 +19,7 @@ import SpeechRecognition, {
 } from "react-speech-recognition";
 import { useSwr } from "@/lib/swr";
 import { getIndexFromKey } from "@/lib/utils";
+import { useMicrophone } from "@/hooks";
 
 export const MultipleChoicePage = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export const MultipleChoicePage = () => {
   const questionList = questionResponse?.data;
   const keyAnswer = ["a", "b", "c", "d"];
   const audioUrl = questionResponse?.data?.question_audio_url || "";
-  const totalQuestion = 3;
+  const totalQuestion = 5;
   const optionList = get(questionList, "options", []);
   const question = get(questionList, "question", "");
   const commands = [
@@ -67,6 +68,7 @@ export const MultipleChoicePage = () => {
   ];
 
   const { listening } = useSpeechRecognition({ commands });
+  const { startListening } = useMicrophone();
 
   const onSelectedAnswer = async (index, value) => {
     setSelectedIndex(index);
@@ -166,45 +168,23 @@ export const MultipleChoicePage = () => {
     SpeechRecognition.stopListening();
   };
 
-  const startCountdown = () => {
-    return setInterval(() => {
-      setCountdown((prevCountdown) => {
-        if (prevCountdown > 0) {
-          return prevCountdown - 1;
-        } else {
-          stopListeningAndClearTimer();
-          return 0;
-        }
-      });
-    }, 1000);
-  };
-
   useEffect(() => {
     let timer;
-    if (listening) {
-      timer = startCountdown();
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
     }
-    return () => stopListeningAndClearTimer(timer);
-  }, [listening]);
 
-  // useEffect(() => {
-  //   let timer;
-  //   if (listening) {
-  //     timer = setInterval(() => {
-  //       setCountdown((prevCountdown) => {
-  //         if (prevCountdown > 0) {
-  //           return prevCountdown - 1;
-  //         } else {
-  //           clearInterval(timer);
-  //           SpeechRecognition.stopListening();
-  //           return 0;
-  //         }
-  //       });
-  //     }, 1000);
-  //   }
+     if (countdown <= 15 && countdown > 0) {
+       startListening();
+     }
 
-  //   return () => clearInterval(timer);
-  // }, [listening]);
+    return () => {
+      clearInterval(timer);
+      stopListeningAndClearTimer(timer);
+    };
+  }, [listening, startListening]);
 
   // RENDER FUNCTION
   const renderCheckmark = (index) => {
@@ -261,7 +241,7 @@ export const MultipleChoicePage = () => {
       <div className='grid grid-cols-4 gap-4 text-center flex-grow'>
         {optionList.map((option, index) => (
           <button
-            disabled
+            disabled={!introRef.current}
             key={option.key}
             onClick={() => onSelectedAnswer(index, option)}
             className='relative w-full rounded-lg flex items-center justify-center h-full cursor-pointer transition-colors duration-300'
