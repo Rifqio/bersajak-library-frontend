@@ -2,7 +2,6 @@ import {
   Button,
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter
@@ -13,7 +12,7 @@ import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
-const ScoreDialog = ({ onOpen, onBack, score }) => {
+const ScoreDialog = ({ onOpen, score }) => {
   const navigate = useNavigate();
   const { data: scoreAudio } = useSwr(`/guide/score?score=${score}`, fetcher);
   const roundedScore = score.toFixed(0);
