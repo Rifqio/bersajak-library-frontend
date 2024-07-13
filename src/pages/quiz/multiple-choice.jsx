@@ -182,6 +182,7 @@ export const MultipleChoicePage = () => {
 
     return () => {
       clearInterval(timer);
+      stopListeningAndClearTimer(timer);
     };
   }, [listening, startListening]);
 
