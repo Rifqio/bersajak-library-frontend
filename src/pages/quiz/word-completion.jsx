@@ -69,11 +69,11 @@ const WordCompletionPage = () => {
   const commands = [
     {
       command: answerList,
-      callback: ({ command }) => {
-        if (command.includes(answerList)) {
-          setScore((prevScore) => prevScore + 100 / 20);
-        }
-      },
+      // callback: ({ command }) => {
+      // if (command.includes(answerList)) {
+      //   setScore((prevScore) => prevScore + 100 / 10);
+      // }
+      // },
       matchInterim: true
     }
   ];
@@ -162,7 +162,8 @@ const WordCompletionPage = () => {
     } else if (countdown <= 10 && countdown > 0) {
       stopSpeech();
       startListening();
-    } if (countdown === 0) {
+    }
+    if (countdown === 0) {
       handleNextQuiz();
     }
 
@@ -173,7 +174,15 @@ const WordCompletionPage = () => {
 
   useEffect(() => {
     if (isValidCommand) {
-      validateAnswer();
+      validateAnswer()
+        .then((response) => {
+          if (response.status === true) {
+            setScore((prevScore) => prevScore + 100 / 10);
+          }
+        })
+        .catch((error) => {
+          console.error("Error validating answer:", error);
+        });
     }
   }, [isValidCommand]);
 
@@ -202,15 +211,20 @@ const WordCompletionPage = () => {
         if (isShowScore && audioUrl && audioRef.current && stepAudio === 2) {
           await audioRef.current.play();
         }
-  
-        if (isShowScore && audioOutroUrl && stepAudio === 3 && audioOutroRef.current) {
+
+        if (
+          isShowScore &&
+          audioOutroUrl &&
+          stepAudio === 3 &&
+          audioOutroRef.current
+        ) {
           await audioOutroRef.current.play();
         }
       } catch (error) {
         console.error("Error playing audio:", error);
       }
     };
-  
+
     playAudio();
   }, [audioUrl, audioOutroUrl, isShowScore, stepAudio]);
 
@@ -225,14 +239,14 @@ const WordCompletionPage = () => {
           className='hidden'
         />
         <audio
-          autoPlay={stepAudio === 2}
+          autoPlay={stepAudio === 2 && isShowScore}
           ref={audioRef}
           onEnded={onEnndedScored}
           src={audioUrl}
           className='hidden'
         />
         <audio
-          autoPlay={stepAudio === 3}
+          autoPlay={stepAudio === 3 && isShowScore}
           ref={audioOutroRef}
           src={audioOutroUrl}
           className='hidden'
