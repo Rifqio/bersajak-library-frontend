@@ -186,7 +186,12 @@ export const MultipleChoicePage = () => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
     }
-     if (countdown <= 20 && countdown > 0) {
+    if (countdown === 35) {
+      if (!isShowScore && audioUrl && audioRef.current && stepAudio === 2) {
+        audioRef.current.play();
+      }
+    }
+     if (countdown <= 15 && countdown > 0) {
        startListening();
      }
      if (countdown === 0 && !isShowScore) {
@@ -232,10 +237,6 @@ export const MultipleChoicePage = () => {
       try {
         if (audioIntroUrl && audioIntroRef.current && stepAudio === 1) {
           await audioIntroRef.current.play();
-        }
-  
-        if (!isShowScore && audioUrl && audioRef.current && stepAudio === 2) {
-          await audioRef.current.play();
         }
   
         if (isShowScore && audioScoreUrl && audioScoreRef.current && stepAudio === 3) {
