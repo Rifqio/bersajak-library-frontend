@@ -15,9 +15,10 @@ import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const [soundModal, setSoundModal] = useState(false);
-  const [queryHome, setQueryHome] = useState("greetings=true");
-  const [onPlayGreetings, setOnPlayGreetings] = useState(false);
-  const [stepAudio, setStepAudio] = useState(1);
+  const [queryAudioEnabled, setQueryAudioEnabled] = useState(
+    "isAudioEnabled=true"
+  );
+  const [onPlayGreetings, setOnPlayGreetings] = useState(true);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [navigationUrl, setNavigationUrl] = useState(null);
   const [bookListUrl, setBookListUrl] = useState(null);
@@ -26,47 +27,42 @@ const HomePage = () => {
   const { data: navigationData } = useSwr(navigationUrl, fetcher);
   const { data, isLoading } = useSwr("/book/list", fetcher);
   const { data: bookListAudio } = useSwr(bookListUrl, fetcher);
-  const { data: homeData } = useSwr(`/guide/home?${queryHome}`, fetcher);
+  const { data: greetingData } = useSwr(`/guide/home?greetings=true`, fetcher);
+  const { data: chooseAudioData } = useSwr(
+    `/guide/home?${queryAudioEnabled}`,
+    fetcher
+  );
   const { data: chooseBookData } = useSwr(bookChooseUrl, fetcher);
 
-  const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
+  const { isAudioEnabled, setIsAudioEnabled } = useAudioStore();
 
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const audioNavigationRef = useRef(null);
   const bookListRef = useRef(null);
+  const chooseEnableAudioRef = useRef(null);
   const chooseBookAudioRef = useRef(null);
   const availableBookAudioRef = useRef(null);
-  const audioUrl = homeData?.data?.audio;
+
+  const audioUrl = greetingData?.data?.audio;
 
   useEffect(() => {
-    if (audioUrl && audioRef.current) {
-      setIsAudioPlaying(true);
-      if (queryHome !== "greetings=true") {
-        audioRef.current
-          .play()
-          .catch((error) =>
-            console.error("Error playing greeting audio:", error)
-          );
-      }
-    }
-  }, [audioUrl, queryHome]);
+    setSoundModal(true);
+  }, []);
 
   useEffect(() => {
-    if (isAudioEnabled && !isAudioPlaying) {
-      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
-    }
     if (isAudioPlaying) {
       SpeechRecognition.stopListening();
+    } else if (!isAudioPlaying && isAudioEnabled) {
+      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
     }
-  }, [isAudioPlaying, audioRef, isAudioEnabled]);
+  }, [isAudioPlaying, isAudioEnabled, onPlayGreetings]);
 
   const commands = [
     {
       command: ["ya", "tidak"],
       callback: (command) => {
-        console.log(command);
-        if (firstVisit || soundModal) {
+        if (!isAudioPlaying && !onPlayGreetings) {
           if (command === "ya" || command.includes("ya")) {
             onEnableAudio();
           } else if (command === "tidak" || command.includes("tidak")) {
@@ -83,9 +79,7 @@ const HomePage = () => {
     {
       command: ["bawah"],
       callback: () => {
-        if (!isAudioPlaying) {
-          window.scrollTo(0, document.body.scrollHeight);
-        }
+        window.scrollTo(0, document.body.scrollHeight);
       },
       isFuzzyMatch: true,
       fuzzyMatchingThreshold: 0.2,
@@ -94,9 +88,7 @@ const HomePage = () => {
     {
       command: ["atas"],
       callback: () => {
-        if (!isAudioPlaying) {
-          window.scrollTo(0, 0);
-        }
+        window.scrollTo(0, 0);
       },
       isFuzzyMatch: true,
       fuzzyMatchingThreshold: 0.2,
@@ -105,11 +97,9 @@ const HomePage = () => {
     {
       command: ["pilih buku"],
       callback: () => {
-        if (!isAudioPlaying) {
-          window.scrollTo(0, document.body.scrollHeight);
-          chooseBookAudioRef.current.play();
-          handleSelectBooks();
-        }
+        window.scrollTo(0, document.body.scrollHeight);
+        chooseBookAudioRef.current.play();
+        handleSelectBooks();
       },
       isFuzzyMatch: true,
       fuzzyMatchingThreshold: 0.2,
@@ -117,19 +107,21 @@ const HomePage = () => {
     },
     // ! Hardcoded at the momment due to prototype
     {
-      command: ["suara gemuruh itu", "hutan larangan", "membuat ekoenzim", "wabah penyakit"],
+      command: [
+        "suara gemuruh itu",
+        "hutan larangan",
+        "membuat ekoenzim",
+        "wabah penyakit"
+      ],
       callback: (command) => {
-        console.log(command);
-        if (!isAudioPlaying || !onPlayGreetings) {
-          if (command === "suara gemuruh itu") {
-            navigate("/book/read/audio/2")
-          } else if (command === "hutan larangan") {
-            navigate("/book/read/audio/3")
-          } else if (command.includes("membuat")) {
-            navigate("/book/read/audio/4")
-          } else if (command.includes("wabah")) {
-            navigate("/book/read/audio/5")
-          }
+        if (command === "suara gemuruh itu") {
+          navigate("/book/read/audio/2");
+        } else if (command === "hutan larangan") {
+          navigate("/book/read/audio/3");
+        } else if (command.includes("membuat")) {
+          navigate("/book/read/audio/4");
+        } else if (command.includes("wabah")) {
+          navigate("/book/read/audio/5");
         }
       },
       isFuzzyMatch: true,
@@ -140,45 +132,25 @@ const HomePage = () => {
 
   useSpeechRecognition({ commands });
 
-  useEffect(() => {
-    const firstCondition = navigationData?.data?.audio && audioNavigationRef.current;
-    const secondCondition = !onPlayGreetings;
-
-    if (firstCondition && secondCondition) {
-      setIsAudioPlaying(true);
-      audioNavigationRef.current
-        .play()
-        .catch((error) =>
-          console.error("Error playing navigation audio:", error)
-        );
-    }
-
-    return () => {
-      if (audioNavigationRef.current) {
-        setIsAudioPlaying(false);
-        audioNavigationRef.current.pause();
-      }
-    };
-  }, [navigationData, onPlayGreetings, stepAudio]);
-
   const onEnableAudio = () => {
-    setQueryHome("isAudioEnabled=true");
     setSoundModal(false);
     setIsAudioPlaying(true);
     setIsAudioEnabled(true);
+    chooseEnableAudioRef.current.play();
     setNavigationUrl("/guide/navigation");
   };
 
   const onDisabledAudio = () => {
-    setQueryHome("isAudioEnabled=false");
-    setIsAudioEnabled(false);
     setSoundModal(false);
+    setIsAudioEnabled(false);
+    setQueryAudioEnabled("isAudioEnabled=false");
+    chooseEnableAudioRef.current.play();
   };
 
   const onEndedGreeting = () => {
     setIsAudioPlaying(false);
     setOnPlayGreetings(false);
-    setStepAudio(2);
+    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
   };
 
   const handleSelectBooks = () => {
@@ -255,24 +227,35 @@ const HomePage = () => {
   const AudioSection = () => {
     return (
       <>
+        {/* Selamat datang di bersajak... */}
         <audio
-          autoPlay={firstVisit && isAudioEnabled}
           ref={audioRef}
-          onPlay={() => {
-            SpeechRecognition.stopListening();
-            setIsAudioPlaying(true);
-            setOnPlayGreetings(true);
-          }}
+          autoPlay={onPlayGreetings}
+          onPlay={() => SpeechRecognition.stopListening()}
           onEnded={onEndedGreeting}
           src={audioUrl}
           className='hidden'
         />
+        {/* Suara diaktifkan / Suara dinonaktifkan... */}
+        <audio
+          onPlay={() => SpeechRecognition.stopListening()}
+          ref={chooseEnableAudioRef}
+          onEnded={() => {
+            audioNavigationRef.current.play();
+          }}
+          src={chooseAudioData?.data?.audio}
+          className='hidden'
+        />
+        {/* Ada beberapa navigasi yang dapat kamu gunakan... */}
         <audio
           src={navigationData?.data?.audio}
           ref={audioNavigationRef}
-          autoPlay={stepAudio === 2 && isAudioPlaying}
           onEnded={() => {
             setIsAudioPlaying(false);
+            SpeechRecognition.startListening({
+              continuous: true,
+              language: "id-ID"
+            });
           }}
           className='hidden'
         />
@@ -280,11 +263,13 @@ const HomePage = () => {
           onEnded={() => {
             onPlayChooseBook();
           }}
+          onPlay={() => SpeechRecognition.stopListening()}
           ref={chooseBookAudioRef}
           src={bookListAudio?.data?.audio}
           className='hidden'
         />
         <audio
+          onPlay={() => SpeechRecognition.stopListening()}
           ref={availableBookAudioRef}
           src={chooseBookData?.data}
           onEnded={() => setIsAudioPlaying(false)}
@@ -307,7 +292,7 @@ const HomePage = () => {
       </Button>
       <ModalSound
         disabled={onPlayGreetings}
-        onOpen={firstVisit || soundModal}
+        onOpen={soundModal}
         onEnableAudio={onEnableAudio}
         onOpenChange={setSoundModal}
         onDisabledAudio={onDisabledAudio}
