@@ -12,6 +12,7 @@ import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { useSpeechRecognition } from "react-speech-recognition";
 
 const ScoreDialog = ({ onOpen, score }) => {
   const navigate = useNavigate();
@@ -24,6 +25,24 @@ const ScoreDialog = ({ onOpen, score }) => {
   const percentage = (roundedScore / 100) * 100;
   const circumference = 2 * Math.PI * 50;
   const offset = circumference - (percentage / 100) * circumference;
+
+  const commands = [
+    {
+      command: [
+        "pilih buku",
+        "selesai",
+      ],
+      callback: (command) => {
+        if (command === "pilih buku") {
+          navigate(ROUTE.Home);
+        }
+      },
+      isFuzzyMatch: true,
+      bestMatchOnly: true
+    }
+  ];
+
+  useSpeechRecognition({ commands });
 
   const handleReload = () => {
     window.location.reload();

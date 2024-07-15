@@ -50,6 +50,7 @@ const WordCompletionPage = () => {
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
+  const [answerAudioUrl, setAnswerAudioUrl] = useState(null);
 
   // FETCH SOAL
   const { data: questionResponse } = useSwr(
@@ -74,7 +75,9 @@ const WordCompletionPage = () => {
     }
   ];
 
-  const { transcript, resetTranscript, listening } = useSpeechRecognition({ commands });
+  const { transcript, resetTranscript, listening } = useSpeechRecognition({
+    commands
+  });
 
   //POST ANSWER
   const validCommands = commands.map((cmd) => cmd.command).flat();
@@ -95,6 +98,7 @@ const WordCompletionPage = () => {
   };
 
   const validateAnswer = usePostQuizAnswer(`/quiz/word-completion/${id}`, body);
+  const { data: answerAudio } = useSwr(answerAudioUrl, fetcher);
 
   // HANDLE FUNCTION
   const handleBackButton = () => {
@@ -117,11 +121,6 @@ const WordCompletionPage = () => {
         setIsShowScore(true);
       }, 3000);
     } else {
-      toast.success(`Skor anda adalah ${roundedScore}`, {
-        position: "top-center",
-        autoClose: 1000,
-        pauseOnHover: false
-      });
       setTimeout(() => {
         setCountdown(20);
         resetTranscript();
@@ -137,6 +136,20 @@ const WordCompletionPage = () => {
         .then((response) => {
           if (response.status === true) {
             setScore((prevScore) => prevScore + 100 / totalQuestion);
+            setAnswerAudioUrl("/guide/answer?type=correct");
+            toast.success("Jawaban benar!", {
+              autoClose: 2000
+            });
+            if (response.status === 400) {
+              setAnswerAudioUrl("/guide/answer?type=wrong");
+              toast.error("Jawaban salah!", {
+                autoClose: 2000
+              });
+            }
+
+            answerAudioRef.current.play().catch((error) => {
+              console.error("Error playing the audio:", error);
+            });
           }
         })
         .catch((error) => {
@@ -146,6 +159,7 @@ const WordCompletionPage = () => {
   }, [isValidCommand]);
 
   //AUDITO SECTION
+  const answerAudioRef = useRef(null);
   const audioQuestionRef = useRef(null);
   const audioIntroRef = useRef(null);
 
@@ -170,7 +184,7 @@ const WordCompletionPage = () => {
       startListening();
     }
 
-    if(countdown === 0){
+    if (countdown === 0) {
       handleNextQuiz();
     }
 
@@ -180,7 +194,12 @@ const WordCompletionPage = () => {
   }, [listening, startListening]);
 
   useEffect(() => {
-    if (!isPlayingIntro && audioIntroUrl && audioIntroRef.current && numberQuiz > 1) {
+    if (
+      !isPlayingIntro &&
+      audioIntroUrl &&
+      audioIntroRef.current &&
+      numberQuiz > 1
+    ) {
       audioIntroRef.current.play().catch((error) => {
         console.error("Error playing the audio:", error);
       });
@@ -219,6 +238,12 @@ const WordCompletionPage = () => {
           onEnded={() => onStartListening()}
           onPlay={() => SpeechRecognition.stopListening()}
           src={audioQuestionUrl}
+          className='hidden'
+        />
+        <audio
+          ref={answerAudioRef}
+          onEnded={handleNextQuiz}
+          src={answerAudio?.data}
           className='hidden'
         />
       </>
