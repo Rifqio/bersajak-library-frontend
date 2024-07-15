@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useSpeaker, useMicrophone } from "@/hooks";
+import { useMicrophone } from "@/hooks";
 import { usePost, useSwr } from "@/lib/swr";
 import { useParams } from "react-router-dom";
 import { fetcher } from "@/lib/fetcher";
@@ -40,7 +40,7 @@ function splitQuestion(question) {
 
 const WordCompletionPage = () => {
   const { id } = useParams();
-  const { startListening } = useMicrophone();
+  const { startListening, stopListening } = useMicrophone();
   const navigate = useNavigate();
 
   const [countdown, setCountdown] = useState(20);
@@ -50,7 +50,6 @@ const WordCompletionPage = () => {
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
-  const [answerAudioUrl, setAnswerAudioUrl] = useState(null);
 
   // FETCH SOAL
   const { data: questionResponse } = useSwr(
@@ -80,10 +79,10 @@ const WordCompletionPage = () => {
   });
 
   //POST ANSWER
-  const validCommands = commands.map((cmd) => cmd.command).flat();
+  const validCommands = commands.map((cmd) => cmd.command).flat() || "";
   const isValidCommand = validCommands.some((cmd) =>
     transcript.includes(cmd.toLowerCase())
-  );
+  ) || "";
   const foundCommands = validCommands.filter((cmd) =>
     transcript.includes(cmd.toLowerCase())
   );
@@ -98,7 +97,8 @@ const WordCompletionPage = () => {
   };
 
   const validateAnswer = usePostQuizAnswer(`/quiz/word-completion/${id}`, body);
-  const { data: answerAudio } = useSwr(answerAudioUrl, fetcher);
+  const { data: answerCorrectUrl } = useSwr('/guide/answer?type=correct', fetcher);
+  const { data: answerWrongUrl } = useSwr('/guide/answer?type=wrong', fetcher);
 
   // HANDLE FUNCTION
   const handleBackButton = () => {
@@ -114,18 +114,15 @@ const WordCompletionPage = () => {
   };
 
   const handleNextQuiz = () => {
-    const roundedScore = score.toFixed(1);
     if (numberQuiz > totalQuestion - 1) {
       setTimeout(() => {
         resetTranscript();
         setIsShowScore(true);
       }, 3000);
     } else {
-      setTimeout(() => {
-        setCountdown(20);
-        resetTranscript();
-        handleNext();
-      }, 3000);
+      setCountdown(20);
+      resetTranscript();
+      handleNext();
     }
   };
 
@@ -136,18 +133,20 @@ const WordCompletionPage = () => {
         .then((response) => {
           if (response.status === true) {
             setScore((prevScore) => prevScore + 100 / totalQuestion);
-            setAnswerAudioUrl("/guide/answer?type=correct");
             toast.success("Jawaban benar!", {
               autoClose: 2000
             });
-            if (response.status === 400) {
-              setAnswerAudioUrl("/guide/answer?type=wrong");
-              toast.error("Jawaban salah!", {
-                autoClose: 2000
-              });
-            }
 
-            answerAudioRef.current.play().catch((error) => {
+            answerCorrectRef.current.play().catch((error) => {
+              console.error("Error playing the audio:", error);
+            });
+          }
+          if (response.status === 400) {
+            toast.error("Jawaban salah!", {
+              autoClose: 2000
+            });
+
+            answerWrongRef.current.play().catch((error) => {
               console.error("Error playing the audio:", error);
             });
           }
@@ -159,17 +158,14 @@ const WordCompletionPage = () => {
   }, [isValidCommand]);
 
   //AUDITO SECTION
-  const answerAudioRef = useRef(null);
+  const answerCorrectRef = useRef(null);
+  const answerWrongRef = useRef(null);
   const audioQuestionRef = useRef(null);
   const audioIntroRef = useRef(null);
 
   const { data: introData } = useSwr(`/guide/games?type=intro`, fetcher);
   const audioIntroUrl = introData?.data;
   const audioQuestionUrl = get(questionList, "question_audio_url", "");
-
-  const onStartListening = () => {
-    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
-  };
 
   // TRIGGER EFFECT
   useEffect(() => {
@@ -228,22 +224,22 @@ const WordCompletionPage = () => {
           onEnded={() => {
             audioQuestionRef.current.play();
           }}
-          onPlaying={() => SpeechRecognition.stopListening()}
+          onPlaying={() => stopListening()}
           ref={audioIntroRef}
           className='hidden'
           src={audioIntroUrl}
         />
         <audio
           ref={audioQuestionRef}
-          onEnded={() => onStartListening()}
-          onPlay={() => SpeechRecognition.stopListening()}
+          onEnded={() => startListening()}
+          onPlay={() => stopListening()}
           src={audioQuestionUrl}
           className='hidden'
         />
         <audio
-          ref={answerAudioRef}
+          ref={answerCorrectRef || answerWrongRef}
           onEnded={handleNextQuiz}
-          src={answerAudio?.data}
+          src={answerCorrectUrl?.data ||answerWrongUrl?.data}
           className='hidden'
         />
       </>
