@@ -24,8 +24,12 @@ const HomePage = () => {
   const [bookListUrl, setBookListUrl] = useState(null);
   const [bookChooseUrl, setBookChooseUrl] = useState(null);
 
-  const { data: navigationData } = useSwr(navigationUrl, fetcher);
   const { data, isLoading } = useSwr("/book/list", fetcher);
+  const { data: navigationData } = useSwr(navigationUrl, fetcher);
+  const { data: toActivateSoundAudio } = useSwr(
+    "/guide/audio-options",
+    fetcher
+  );
   const { data: bookListAudio } = useSwr(bookListUrl, fetcher);
   const { data: greetingData } = useSwr(`/guide/home?greetings=true`, fetcher);
   const { data: chooseAudioData } = useSwr(
@@ -34,12 +38,13 @@ const HomePage = () => {
   );
   const { data: chooseBookData } = useSwr(bookChooseUrl, fetcher);
 
-  const { isAudioEnabled, setIsAudioEnabled } = useAudioStore();
+  const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
 
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const audioNavigationRef = useRef(null);
   const bookListRef = useRef(null);
+  const toActivateSoundAudioRef = useRef(null);
   const chooseEnableAudioRef = useRef(null);
   const chooseBookAudioRef = useRef(null);
   const availableBookAudioRef = useRef(null);
@@ -47,7 +52,9 @@ const HomePage = () => {
   const audioUrl = greetingData?.data?.audio;
 
   useEffect(() => {
-    setSoundModal(true);
+    if (firstVisit) {
+      setSoundModal(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -62,7 +69,7 @@ const HomePage = () => {
     {
       command: ["ya", "tidak"],
       callback: (command) => {
-        if (!isAudioPlaying && !onPlayGreetings) {
+        if (firstVisit && !isAudioPlaying && soundModal) {
           if (command === "ya" || command.includes("ya")) {
             onEnableAudio();
           } else if (command === "tidak" || command.includes("tidak")) {
@@ -148,9 +155,14 @@ const HomePage = () => {
   };
 
   const onEndedGreeting = () => {
-    setIsAudioPlaying(false);
-    setOnPlayGreetings(false);
-    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
+    if (firstVisit) {
+      toActivateSoundAudioRef.current.play();
+      setOnPlayGreetings(false);
+    } else {
+      setIsAudioPlaying(false);
+      setOnPlayGreetings(false);
+      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
+    }
   };
 
   const handleSelectBooks = () => {
@@ -231,14 +243,21 @@ const HomePage = () => {
         <audio
           ref={audioRef}
           autoPlay={onPlayGreetings}
-          onPlay={() => SpeechRecognition.stopListening()}
+          onPlay={() => setIsAudioPlaying(true)}
           onEnded={onEndedGreeting}
           src={audioUrl}
           className='hidden'
         />
+        {/* Untuk mengaktifkan .... */}
+        <audio
+          ref={toActivateSoundAudioRef}
+          onPlay={() => setIsAudioPlaying(true)}
+          src={toActivateSoundAudio?.data?.audio}
+          onEnded={() => setIsAudioPlaying(false)}
+        />
         {/* Suara diaktifkan / Suara dinonaktifkan... */}
         <audio
-          onPlay={() => SpeechRecognition.stopListening()}
+          onPlay={() => setIsAudioPlaying(true)}
           ref={chooseEnableAudioRef}
           onEnded={() => {
             audioNavigationRef.current.play();
