@@ -35,6 +35,8 @@ const ScoreDialog = ({ onOpen, score }) => {
       callback: (command) => {
         if (command === "pilih buku") {
           navigate(ROUTE.Home);
+        } else {
+          window.location.reload();
         }
       },
       isFuzzyMatch: true,

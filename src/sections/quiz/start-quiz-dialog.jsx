@@ -40,13 +40,13 @@ export const StartQuizDialog = ({ open, onOpenChange }) => {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Ingin memulai quiz?</DialogTitle>
+                    <DialogTitle>Ingin memulai kuis?</DialogTitle>
                     <DialogDescription className='pb-6'>
-                        Selamat, kamu telah menyelesaikan cerita. Silahkan pilih tipe quiz
+                        Selamat, kamu telah menyelesaikan cerita. Silahkan pilih jenis permainan
                     </DialogDescription>
                     <div className='flex justify-evenly items-center pb-6 gap-10'>
                        <QuizOption onClick={onClickMultipleChoice} icon={<ArrowDownAZ className="opacity-80" size={100} />} title='Pilihan Ganda' />
-                       <QuizOption onClick={onClickWordCompletion} icon={<ClipboardPen className="opacity-80" size={100} />} title='Lengkapi Kata' />
+                       <QuizOption onClick={onClickWordCompletion} icon={<ClipboardPen className="opacity-80" size={100} />} title='Melengkapi Kata' />
                     </div>
                        <Button onClick={() => onOpenChange()} variant="destructive">Batalkan</Button>
                 </DialogHeader>

@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import { CancelDialog } from "@/sections/quiz";
@@ -29,14 +28,17 @@ export const MultipleChoicePage = () => {
   const [cancelQuiz, setCancelQuiz] = useState(false);
   const [isShowScore, setIsShowScore] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState("");
-  const [selectedOption, setSelectedOption] = useState("");
-  const [answerAudioUrl, setAnswerAudioUrl] = useState(null);
+
   const [numberQuiz, setNumberQuiz] = useState(1);
   const [score, setScore] = useState(0);
-  const audioRef = useRef(null);
+
+  // Audio Ref Section
+  const questionAudioRef = useRef(null);
   const introRef = useRef(null);
-  const answerAudioRef = useRef(null);
+  const correctAnswerRef = useRef(null);
+  const wrongAnswerRef = useRef(null);
 
   // FETCH QUESTION
   const { data: questionResponse } = useSwr(
@@ -45,7 +47,8 @@ export const MultipleChoicePage = () => {
   );
 
   const { data: introAudio } = useSwr(`/guide/multiple-choice`, fetcher);
-  const { data: answerAudio } = useSWR(answerAudioUrl, fetcher);
+  const { data: correctAudio } = useSWR("/guide/answer?type=correct", fetcher);
+  const { data: wrongAudio } = useSWR("/guide/answer?type=false", fetcher);
 
   const questionList = questionResponse?.data;
   const keyAnswer = ["a", "b", "c", "d"];
@@ -72,31 +75,26 @@ export const MultipleChoicePage = () => {
 
   const onSelectedAnswer = async (index, value) => {
     setSelectedIndex(index);
-    setSelectedOption(value.key);
 
     try {
       await axios.post(`/quiz/multiple-choice/${id}`, {
         answer: value.key,
         number: numberQuiz
       });
+
       setScore((prevScore) => prevScore + 100 / totalQuestion);
-      setAnswerAudioUrl("/guide/answer?type=correct");
+      correctAnswerRef.current.play();
       toast.success("Jawaban benar!", {
         autoClose: 2000
       });
     } catch (error) {
       if (error.response.status === 400) {
-        setAnswerAudioUrl("/guide/answer?type=wrong");
+        wrongAnswerRef.current.play();
         toast.error("Jawaban salah!", {
           autoClose: 2000
         });
       }
-      console.error("Error posting answer:", error);
     }
-
-    answerAudioRef.current.play().catch((error) => {
-      console.error("Error playing the audio:", error);
-    });
   };
 
   // HANDLE FUNCTION
@@ -122,7 +120,7 @@ export const MultipleChoicePage = () => {
     setCancelQuiz(true);
   };
 
-  const handleNext = () => {
+  const handleNextState = () => {
     setNumberQuiz((prevPage) => prevPage + 1);
   };
 
@@ -130,7 +128,7 @@ export const MultipleChoicePage = () => {
     if (numberQuiz >= totalQuestion) {
       setIsShowScore(true);
     } else {
-      handleNext();
+      handleNextState();
       setSelectedIndex("");
       setCountdown(40);
     }
@@ -140,56 +138,52 @@ export const MultipleChoicePage = () => {
     navigate(ROUTE.Home);
   };
 
-  const stopListeningAndClearTimer = (timer) => {
-    clearInterval(timer);
-    SpeechRecognition.stopListening();
-  };
-
-  const onStartListening = () => {
-    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
-  };
+  useEffect(() => {
+    if (isPlayingAudio) {
+      SpeechRecognition.stopListening();
+    } else {
+      startListening();
+    }
+  }, [isPlayingAudio, startListening]);
 
   // TRIGGER EFFECT
   useEffect(() => {
     let timer;
     if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
+      if (!isPlayingIntro && !isPlayingAudio) {
+        timer = setInterval(() => {
+          setCountdown((prevCountdown) => prevCountdown - 1);
+        }, 1000);
+      }
     }
-
-    if (countdown <= 15 && countdown > 0) {
-      startListening();
-    }
-
     return () => {
       clearInterval(timer);
-      stopListeningAndClearTimer(timer);
     };
-  }, [listening, startListening]);
+  }, [listening, startListening, isPlayingIntro, countdown, isPlayingAudio]);
 
+  // for playing audio next question
   useEffect(() => {
-    if (!isPlayingIntro && audioUrl && audioRef.current && numberQuiz > 1) {
-      audioRef.current.play().catch((error) => {
+    if (!isPlayingIntro && audioUrl && questionAudioRef.current && numberQuiz > 1) {
+      questionAudioRef.current.play().catch((error) => {
         console.error("Error playing the audio:", error);
       });
     }
-  }, [audioUrl]);
+  }, [audioUrl, numberQuiz]);
 
   useEffect(() => {
-    setIsPlayingIntro(true);
-    introRef.current.play().catch((error) => {
+    if (numberQuiz === 1 && introRef.current) {
+      setIsPlayingIntro(true);
+      setIsPlayingAudio(true);
+      introRef.current.play();
+    }
+  }, [introAudio, numberQuiz]);
+
+  const onEndedIntro = () => {
+    setIsPlayingIntro(false);
+    questionAudioRef.current.play().catch((error) => {
       console.error("Error playing the audio:", error);
     });
-  }, [introAudio]);
-
-  useEffect(() => {
-    if (numberQuiz > 1 && audioRef.current) {
-      audioRef.current.play().catch((error) => {
-        console.error("Error playing the audio:", error);
-      });
-    }
-  }, [numberQuiz, audioUrl]);
+  };
 
   // RENDER FUNCTION
   const renderCheckmark = (index) => {
@@ -207,27 +201,30 @@ export const MultipleChoicePage = () => {
   return (
     <div className='mt-16 h-screen flex flex-col'>
       <audio
-        ref={audioRef}
-        onEnded={() => onStartListening()}
-        onPlay={() => SpeechRecognition.stopListening()}
-        src={audioUrl}
-        className='hidden'
-      />
-      <audio
-        onEnded={() => {
-          audioRef.current.play();
-        }}
-        onPlaying={() => SpeechRecognition.stopListening()}
+        onEnded={onEndedIntro}
         ref={introRef}
         className='hidden'
         src={introAudio?.data}
       />
       <audio
-        ref={answerAudioRef}
-        onEnded={handleNextQuiz}
-        src={answerAudio?.data}
+        onPlay={() => {
+          setIsPlayingAudio(true);
+        }}
+        onEnded={() => {
+          setIsPlayingAudio(false);
+        }}
+        ref={questionAudioRef}
+        src={audioUrl}
         className='hidden'
       />
+      <audio onEnded={handleNextQuiz}>
+        <audio
+          ref={correctAnswerRef}
+          src={correctAudio?.data}
+          className='hidden'
+        />
+        <audio ref={wrongAnswerRef} src={wrongAudio?.data} className='hidden' />
+      </audio>
       <ToastContainer />
       <Progress
         value={(countdown / 40) * 100}

@@ -35,7 +35,7 @@ const AudioBookPage = () => {
 
   const commands = [
     {
-      command: ["pilihan ganda", "lengkapi kata"],
+      command: ["pilihan ganda", "melengkapi kata"],
       callback: (command) => {
         if (!isPlayingAudio) {
           if (command === "pilihan ganda") {

@@ -310,7 +310,7 @@ const HomePage = () => {
         {isAudioEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
       </Button>
       <ModalSound
-        disabled={onPlayGreetings}
+        disabled={isAudioPlaying}
         onOpen={soundModal}
         onEnableAudio={onEnableAudio}
         onOpenChange={setSoundModal}
