@@ -126,14 +126,6 @@ export const MultipleChoicePage = () => {
     setNumberQuiz((prevPage) => prevPage + 1);
   };
 
-  useEffect(() => {
-    if (!isPlayingIntro && audioUrl && audioRef.current && numberQuiz > 1) {
-      audioRef.current.play().catch((error) => {
-        console.error("Error playing the audio:", error);
-      });
-    }
-  }, [audioUrl]);
-
   const handleNextQuiz = () => {
     if (numberQuiz >= totalQuestion) {
       setIsShowScore(true);
@@ -147,6 +139,42 @@ export const MultipleChoicePage = () => {
   const onCancelQuiz = () => {
     navigate(ROUTE.Home);
   };
+
+  const stopListeningAndClearTimer = (timer) => {
+    clearInterval(timer);
+    SpeechRecognition.stopListening();
+  };
+
+  const onStartListening = () => {
+    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
+  };
+
+  // TRIGGER EFFECT
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+    }
+
+    if (countdown <= 15 && countdown > 0) {
+      startListening();
+    }
+
+    return () => {
+      clearInterval(timer);
+      stopListeningAndClearTimer(timer);
+    };
+  }, [listening, startListening]);
+
+  useEffect(() => {
+    if (!isPlayingIntro && audioUrl && audioRef.current && numberQuiz > 1) {
+      audioRef.current.play().catch((error) => {
+        console.error("Error playing the audio:", error);
+      });
+    }
+  }, [audioUrl]);
 
   useEffect(() => {
     setIsPlayingIntro(true);
@@ -163,29 +191,6 @@ export const MultipleChoicePage = () => {
     }
   }, [numberQuiz, audioUrl]);
 
-  const stopListeningAndClearTimer = (timer) => {
-    clearInterval(timer);
-    SpeechRecognition.stopListening();
-  };
-
-  useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
-    }
-
-     if (countdown <= 15 && countdown > 0) {
-       startListening();
-     }
-
-    return () => {
-      clearInterval(timer);
-      stopListeningAndClearTimer(timer);
-    };
-  }, [listening, startListening]);
-
   // RENDER FUNCTION
   const renderCheckmark = (index) => {
     if (selectedIndex === index) {
@@ -197,10 +202,6 @@ export const MultipleChoicePage = () => {
         </div>
       );
     }
-  };
-
-  const onStartListening = () => {
-    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
   };
 
   return (

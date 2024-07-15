@@ -11,10 +11,15 @@ import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const ScoreDialog = ({ onOpen, score }) => {
   const navigate = useNavigate();
+  const scoreAudioRef = useRef(null);
+  const outroAudioRef = useRef(null);
   const { data: scoreAudio } = useSwr(`/guide/score?score=${score}`, fetcher);
+  const { data: outroData } = useSwr(`/guide/games?type=outro`, fetcher);
+  const audioOutroUrl = outroData?.data;
   const roundedScore = score.toFixed(0);
   const percentage = (roundedScore / 100) * 100;
   const circumference = 2 * Math.PI * 50;
@@ -23,8 +28,15 @@ const ScoreDialog = ({ onOpen, score }) => {
   const handleReload = () => {
     window.location.reload();
   }
+
   const handleGoTo = () => {
     navigate(ROUTE.Home);
+  };
+
+  const handleScoreAudioEnded = () => {
+    if (outroAudioRef.current) {
+      outroAudioRef.current.play();
+    }
   };
 
   return (
@@ -66,7 +78,18 @@ const ScoreDialog = ({ onOpen, score }) => {
           <Button onClick={() => handleGoTo()} variant='destructive'>
             Kembali
           </Button>
-          <audio src={scoreAudio?.data} autoPlay className='hidden' />
+          <audio
+            ref={scoreAudioRef}
+            src={scoreAudio?.data}
+            autoPlay
+            className='hidden'
+            onEnded={handleScoreAudioEnded}
+          />
+          <audio
+            ref={outroAudioRef}
+            src={audioOutroUrl}
+            className='hidden'
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

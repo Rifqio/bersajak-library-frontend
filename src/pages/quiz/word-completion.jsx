@@ -14,7 +14,9 @@ import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import ScoreDialog from "@/sections/quiz/score-dialog";
-import { useSpeechRecognition } from "react-speech-recognition";
+import SpeechRecognition, {
+  useSpeechRecognition
+} from "react-speech-recognition";
 
 const buttonView = {
   width: "100px",
@@ -28,7 +30,7 @@ function splitQuestion(question) {
   }
 
   const clue = clueMatch[0];
-  const maskedQuestion = question.replace(clue, ".....");
+  const maskedQuestion = question.replace(clue, "");
 
   return {
     question: maskedQuestion,
@@ -38,14 +40,14 @@ function splitQuestion(question) {
 
 const WordCompletionPage = () => {
   const { id } = useParams();
-  const { startListening, stopListening } = useMicrophone();
-  const { greeting, stopSpeech } = useSpeaker();
+  const { startListening } = useMicrophone();
   const navigate = useNavigate();
 
   const [countdown, setCountdown] = useState(20);
   const [numberQuiz, setNumberQuiz] = useState(1);
+  const totalQuestion = 5;
   const [score, setScore] = useState(0);
-  const [stepAudio, setStepAudio] = useState(1);
+  const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
 
@@ -60,7 +62,6 @@ const WordCompletionPage = () => {
   );
 
   const questionList = questionResponse?.data;
-  const totalQuestion = 10;
   const question = get(questionList, "question", "");
   const answerList = get(questionList, "answer", "");
   const result = splitQuestion(question);
@@ -69,16 +70,11 @@ const WordCompletionPage = () => {
   const commands = [
     {
       command: answerList,
-      // callback: ({ command }) => {
-      // if (command.includes(answerList)) {
-      //   setScore((prevScore) => prevScore + 100 / 10);
-      // }
-      // },
       matchInterim: true
     }
   ];
 
-  const { transcript, resetTranscript } = useSpeechRecognition({ commands });
+  const { transcript, resetTranscript, listening } = useSpeechRecognition({ commands });
 
   //POST ANSWER
   const validCommands = commands.map((cmd) => cmd.command).flat();
@@ -115,9 +111,8 @@ const WordCompletionPage = () => {
 
   const handleNextQuiz = () => {
     const roundedScore = score.toFixed(1);
-    if (numberQuiz >= totalQuestion - 1) {
+    if (numberQuiz > totalQuestion - 1) {
       setTimeout(() => {
-        stopListening();
         resetTranscript();
         setIsShowScore(true);
       }, 3000);
@@ -129,11 +124,37 @@ const WordCompletionPage = () => {
       });
       setTimeout(() => {
         setCountdown(20);
-        stopListening();
         resetTranscript();
         handleNext();
       }, 3000);
     }
+  };
+
+  // TRIGGER EFFECT
+  useEffect(() => {
+    if (isValidCommand) {
+      validateAnswer()
+        .then((response) => {
+          if (response.status === true) {
+            setScore((prevScore) => prevScore + 100 / totalQuestion);
+          }
+        })
+        .catch((error) => {
+          console.error("Error validating answer:", error);
+        });
+    }
+  }, [isValidCommand]);
+
+  //AUDITO SECTION
+  const audioQuestionRef = useRef(null);
+  const audioIntroRef = useRef(null);
+
+  const { data: introData } = useSwr(`/guide/games?type=intro`, fetcher);
+  const audioIntroUrl = introData?.data;
+  const audioQuestionUrl = get(questionList, "question_audio_url", "");
+
+  const onStartListening = () => {
+    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
   };
 
   // TRIGGER EFFECT
@@ -145,110 +166,59 @@ const WordCompletionPage = () => {
       }, 1000);
     }
 
-    if (countdown === 19) {
-      if (audioIntroUrl && audioIntroRef.current) {
-        if (numberQuiz === 1) {
-          audioIntroRef.current
-            .play()
-            .catch((error) =>
-              console.error("Error playing greeting audio:", error)
-            );
-        }
-      }
-    }
-
-    if (countdown > 10 && countdown < 16) {
-      greeting(result.question, 1);
-    } else if (countdown <= 10 && countdown > 0) {
-      stopSpeech();
+    if (countdown <= 15 && countdown > 0) {
       startListening();
     }
-    if (countdown === 0) {
+
+    if(countdown === 0){
       handleNextQuiz();
     }
 
     return () => {
       clearInterval(timer);
     };
-  }, [countdown, startListening, stopSpeech]);
+  }, [listening, startListening]);
 
   useEffect(() => {
-    if (isValidCommand) {
-      validateAnswer()
-        .then((response) => {
-          if (response.status === true) {
-            setScore((prevScore) => prevScore + 100 / 10);
-          }
-        })
-        .catch((error) => {
-          console.error("Error validating answer:", error);
-        });
+    if (!isPlayingIntro && audioIntroUrl && audioIntroRef.current && numberQuiz > 1) {
+      audioIntroRef.current.play().catch((error) => {
+        console.error("Error playing the audio:", error);
+      });
     }
-  }, [isValidCommand]);
-
-  //AUDITO SECTION
-  const onEndedGreeting = () => {
-    setStepAudio(2);
-  };
-  const onEnndedScored = () => {
-    setStepAudio(3);
-  };
-
-  const audioRef = useRef(null);
-  const audioIntroRef = useRef(null);
-  const audioOutroRef = useRef(null);
-
-  const { data: introData } = useSwr(`/guide/games?type=intro`, fetcher);
-  const audioIntroUrl = introData?.data;
-  const { data: outroData } = useSwr(`/guide/games?type=outro`, fetcher);
-  const audioOutroUrl = outroData?.data;
-  const { data: scoreData } = useSwr(`/guide/score?score=${score}`, fetcher);
-  const audioUrl = scoreData?.data;
+  }, [audioIntroUrl]);
 
   useEffect(() => {
-    const playAudio = async () => {
-      try {
-        if (isShowScore && audioUrl && audioRef.current && stepAudio === 2) {
-          await audioRef.current.play();
-        }
+    setIsPlayingIntro(true);
+    audioIntroRef.current.play().catch((error) => {
+      console.error("Error playing the audio:", error);
+    });
+  }, [audioIntroUrl]);
 
-        if (
-          isShowScore &&
-          audioOutroUrl &&
-          stepAudio === 3 &&
-          audioOutroRef.current
-        ) {
-          await audioOutroRef.current.play();
-        }
-      } catch (error) {
-        console.error("Error playing audio:", error);
-      }
-    };
-
-    playAudio();
-  }, [audioUrl, audioOutroUrl, isShowScore, stepAudio]);
+  useEffect(() => {
+    if (numberQuiz > 1 && audioQuestionRef.current) {
+      audioQuestionRef.current.play().catch((error) => {
+        console.error("Error playing the audio:", error);
+      });
+    }
+  }, [numberQuiz, audioQuestionUrl]);
 
   const AudioSection = () => {
     return (
       <>
         <audio
-          autoPlay={stepAudio === 1}
+          onEnded={() => {
+            audioQuestionRef.current.play();
+          }}
+          onPlaying={() => SpeechRecognition.stopListening()}
           ref={audioIntroRef}
-          onEnded={onEndedGreeting}
+          className='hidden'
           src={audioIntroUrl}
-          className='hidden'
         />
         <audio
-          autoPlay={stepAudio === 2 && isShowScore}
-          ref={audioRef}
-          onEnded={onEnndedScored}
-          src={audioUrl}
-          className='hidden'
-        />
-        <audio
-          autoPlay={stepAudio === 3 && isShowScore}
-          ref={audioOutroRef}
-          src={audioOutroUrl}
+          ref={audioQuestionRef}
+          onEnded={() => onStartListening()}
+          onPlay={() => SpeechRecognition.stopListening()}
+          src={audioQuestionUrl}
           className='hidden'
         />
       </>
