@@ -11,13 +11,14 @@ import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
-import { useSpeechRecognition } from "react-speech-recognition";
+import { useEffect, useRef, useState } from "react";
+import SpeechRecognition,{ useSpeechRecognition } from "react-speech-recognition";
 
 const ScoreDialog = ({ onOpen, score }) => {
   const navigate = useNavigate();
   const scoreAudioRef = useRef(null);
   const outroAudioRef = useRef(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const { data: scoreAudio } = useSwr(`/guide/score?score=${score}`, fetcher);
   const { data: outroData } = useSwr(`/guide/games?type=outro`, fetcher);
   const audioOutroUrl = outroData?.data;
@@ -45,6 +46,17 @@ const ScoreDialog = ({ onOpen, score }) => {
   ];
 
   useSpeechRecognition({ commands });
+
+  useEffect(() => {
+    if (isPlayingAudio) {
+      SpeechRecognition.stopListening();
+    } else {
+      SpeechRecognition.startListening({ continuous: true, language: 'id-ID' });
+    }
+    return () => {
+      SpeechRecognition.stopListening();
+    };
+  }, [isPlayingAudio]);
 
   const handleReload = () => {
     window.location.reload();
@@ -102,6 +114,7 @@ const ScoreDialog = ({ onOpen, score }) => {
           <audio
             ref={scoreAudioRef}
             src={scoreAudio?.data}
+            onPlay={() => setIsPlayingAudio(true)}
             autoPlay
             className='hidden'
             onEnded={handleScoreAudioEnded}
@@ -110,6 +123,7 @@ const ScoreDialog = ({ onOpen, score }) => {
             ref={outroAudioRef}
             src={audioOutroUrl}
             className='hidden'
+            onEnded={() => setIsPlayingAudio(false)}
           />
         </DialogFooter>
       </DialogContent>

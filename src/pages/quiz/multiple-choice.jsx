@@ -53,7 +53,7 @@ export const MultipleChoicePage = () => {
   const questionList = questionResponse?.data;
   const keyAnswer = ["a", "b", "c", "d"];
   const audioUrl = questionResponse?.data?.question_audio_url || "";
-  const totalQuestion = 5;
+  const totalQuestion = 2;
   const optionList = get(questionList, "options", []);
   const question = get(questionList, "question", "");
   const commands = [
