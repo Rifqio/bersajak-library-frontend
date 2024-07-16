@@ -61,14 +61,25 @@ export const NewMultipleChoice = () => {
         await onSelectedAnswer(index, value);
       },
       matchInterim: true
+    },
+    {
+      command: ["pilih buku", "selesai"],
+      callback: (command) => {
+        if (command === "pilih buku") {
+          navigate(ROUTE.BookList);
+        } else {
+          navigate(ROUTE.Home);
+        }
+      },
+      isFuzzyMatch: true,
+      bestMatchOnly: true
     }
   ];
-  
+
   useSpeechRecognition({ commands });
 
   const onSelectedAnswer = async (index, value) => {
     setSelectedIndex(index);
-
     try {
       await axios.post(`/quiz/multiple-choice/${id}`, {
         answer: value.key,
@@ -162,9 +173,14 @@ export const NewMultipleChoice = () => {
 
   const getBackgroundColor = (index) => {
     if (selectedIndex === index) {
-      return '#D70B52';
-    } 
-    return '';
+      return "#D70B52";
+    }
+    return "";
+  };
+
+  const onPlayAudio = () => {
+    setIsPlayingAudio(true);
+    SpeechRecognition.stopListening();
   };
 
   const renderAudioSection = () => {
@@ -173,11 +189,12 @@ export const NewMultipleChoice = () => {
         <audio
           onEnded={onEndedIntro}
           ref={introRef}
+          onPlay={onPlayAudio}
           className='hidden'
           src={introAudio?.data}
         />
         <audio
-          onPlay={() => setIsPlayingAudio(true)}
+          onPlay={onPlayAudio}
           onEnded={() => setIsPlayingAudio(false)}
           ref={questionAudioRef}
           src={audioUrl}
@@ -213,7 +230,13 @@ export const NewMultipleChoice = () => {
           onOpenChange={setCancelQuiz}
           onCancel={onCancelQuiz}
         />
-        <ScoreDialog onOpen={isShowScore} onBack={onCancelQuiz} score={score} />
+        <ScoreDialog
+          isPlayingAudio={isPlayingAudio}
+          setIsPlayingAudio={setIsPlayingAudio}
+          onOpen={isShowScore}
+          onBack={onCancelQuiz}
+          score={score}
+        />
       </>
     );
   };

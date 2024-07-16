@@ -11,14 +11,13 @@ import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import SpeechRecognition,{ useSpeechRecognition } from "react-speech-recognition";
+import { useEffect, useRef } from "react";
+import SpeechRecognition from "react-speech-recognition";
 
-const ScoreDialog = ({ onOpen, score }) => {
+const ScoreDialog = ({ onOpen, score, isPlayingAudio, setIsPlayingAudio }) => {
   const navigate = useNavigate();
   const scoreAudioRef = useRef(null);
   const outroAudioRef = useRef(null);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const { data: scoreAudio } = useSwr(`/guide/score?score=${score}`, fetcher);
   const { data: outroData } = useSwr(`/guide/games?type=outro`, fetcher);
   const audioOutroUrl = outroData?.data;
@@ -26,26 +25,6 @@ const ScoreDialog = ({ onOpen, score }) => {
   const percentage = (roundedScore / 100) * 100;
   const circumference = 2 * Math.PI * 50;
   const offset = circumference - (percentage / 100) * circumference;
-
-  const commands = [
-    {
-      command: [
-        "pilih buku",
-        "selesai",
-      ],
-      callback: (command) => {
-        if (command === "pilih buku") {
-          navigate(ROUTE.BookList);
-        } else {
-          navigate(ROUTE.Home)
-        }
-      },
-      isFuzzyMatch: true,
-      bestMatchOnly: true
-    }
-  ];
-
-  useSpeechRecognition({ commands });
 
   useEffect(() => {
     if (isPlayingAudio) {
@@ -133,6 +112,8 @@ const ScoreDialog = ({ onOpen, score }) => {
 
 ScoreDialog.propTypes = {
   onOpen: PropTypes.bool.isRequired,
+  isPlayingAudio: PropTypes.bool.isRequired,
+  setIsPlayingAudio: PropTypes.func.isRequired,
   score: PropTypes.string
 };
 

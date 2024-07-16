@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
     path: "quiz",
     element: (
       <ErrorBoundary>
-        <QuizLayout />
+        <Outlet />
       </ErrorBoundary>
     ),
     children: [
@@ -88,7 +88,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "word-completion",
-        element: <Outlet />,
+        element: <QuizLayout />,
         children: [
           {
             path: "",

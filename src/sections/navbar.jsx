@@ -22,6 +22,7 @@ export const Navbar = ({ className, isDark }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
+            <img className="w-16 h-16" src="/bersajak.png" />
             <button
               onClick={handleNavigate}
               className={`text-2xl ${isDark ? 'text-yellow-100 ' : 'text-[#2B3448] '} font-poppins tracking-tight font-bold cursor-pointer`}
