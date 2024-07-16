@@ -5,7 +5,7 @@ import { usePost, useSwr } from "@/lib/swr";
 import { useParams } from "react-router-dom";
 import { fetcher } from "@/lib/fetcher";
 import { get } from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import BooksIllustration from "../../assets/board.svg";
@@ -114,10 +114,10 @@ const WordCompletionPage = () => {
 
   const handleNextQuiz = () => {
     if (numberQuiz > totalQuestion - 1) {
-      setTimeout(() => {
-        resetTranscript();
-        setIsShowScore(true);
-      }, 3000);
+      setIsShowScore(true);
+      // setTimeout(() => {
+        // resetTranscript();
+      // }, 3000);
     } else {
       setCountdown(20);
       resetTranscript();
