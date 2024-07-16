@@ -31,7 +31,6 @@ const HomePage = () => {
     fetcher
   );
   const { data: bookListAudio } = useSwr(bookListUrl, fetcher);
-  const { data: greetingData } = useSwr(`/guide/home?greetings=true`, fetcher);
   const { data: chooseAudioData } = useSwr(
     `/guide/home?${queryAudioEnabled}`,
     fetcher
@@ -41,7 +40,7 @@ const HomePage = () => {
   const { isAudioEnabled, firstVisit, setIsAudioEnabled } = useAudioStore();
 
   const navigate = useNavigate();
-  const audioRef = useRef(null);
+  const greetingAudioRef = useRef(null);
   const audioNavigationRef = useRef(null);
   const bookListRef = useRef(null);
   const toActivateSoundAudioRef = useRef(null);
@@ -49,13 +48,12 @@ const HomePage = () => {
   const chooseBookAudioRef = useRef(null);
   const availableBookAudioRef = useRef(null);
 
-  const audioUrl = greetingData?.data?.audio;
-
   useEffect(() => {
     if (firstVisit) {
       setSoundModal(true);
+      setOnPlayGreetings(true);
     }
-  }, []);
+  }, [firstVisit]);
 
   useEffect(() => {
     if (isAudioPlaying) {
@@ -241,11 +239,12 @@ const HomePage = () => {
       <>
         {/* Selamat datang di bersajak... */}
         <audio
-          ref={audioRef}
+          ref={greetingAudioRef}
           autoPlay={onPlayGreetings}
           onPlay={() => setIsAudioPlaying(true)}
           onEnded={onEndedGreeting}
-          src={audioUrl}
+          // src={audioUrl}
+          src='/audio/greeting.mp3'
           className='hidden'
         />
         {/* Untuk mengaktifkan .... */}

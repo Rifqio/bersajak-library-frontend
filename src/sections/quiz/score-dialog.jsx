@@ -35,9 +35,9 @@ const ScoreDialog = ({ onOpen, score }) => {
       ],
       callback: (command) => {
         if (command === "pilih buku") {
-          navigate(ROUTE.Home);
+          navigate(ROUTE.BookList);
         } else {
-          window.location.reload();
+          navigate(ROUTE.Home)
         }
       },
       isFuzzyMatch: true,
@@ -133,7 +133,6 @@ const ScoreDialog = ({ onOpen, score }) => {
 
 ScoreDialog.propTypes = {
   onOpen: PropTypes.bool.isRequired,
-  onBack: PropTypes.func.isRequired,
   score: PropTypes.string
 };
 

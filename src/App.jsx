@@ -8,6 +8,8 @@ import { Page404 } from "./pages/error";
 import PresStartQuizPage from "./pages/quiz/prestart-quiz";
 import AudioBookPage from "./pages/book/audio-book";
 import ErrorBoundary from "./pages/error/ErrorBoundary";
+import { NewMultipleChoice } from "./pages/quiz/new-multiple-choice";
+import { BookListPage } from "./pages/book/book-list";
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +55,10 @@ export const router = createBrowserRouter([
         ]
       },
       {
+        path: "list",
+        element: <BookListPage />
+      },
+      {
         path: ":id",
         element: <BookDetailPage />
       }
@@ -76,7 +82,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ":id",
-            element: <MultipleChoicePage />
+            element: <NewMultipleChoice />
           }
         ]
       },
@@ -96,6 +102,10 @@ export const router = createBrowserRouter([
       }
     ]
   },
+  // {
+  //   path: "quiz-test/:id",
+  //   element: <NewMultipleChoice />
+  // },
   {
     path: "*",
     element: <DashboardLayout />,

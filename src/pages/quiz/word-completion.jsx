@@ -30,10 +30,9 @@ function splitQuestion(question) {
   }
 
   const clue = clueMatch[0];
-  const maskedQuestion = question.replace(clue, "");
 
   return {
-    question: maskedQuestion,
+    question: question,
     clue: clue
   };
 }
