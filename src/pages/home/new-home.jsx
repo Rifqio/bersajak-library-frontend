@@ -1,10 +1,17 @@
-import { Button } from "@/components";
+import { Button, Card, CardContent } from "@/components";
 import BooksIllustration from "../../assets/books.svg";
 import CloudIllustration from "../../assets/cloud.svg";
 import { Navbar } from "@/sections";
 import { useSwr } from "@/lib/swr";
 import { fetcher } from "@/lib/fetcher";
 import BookList from "@/sections/book/book-list";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/carousel";
 
 export const NewHomePage = () => {
   const { data, isLoading } = useSwr("/book/list", fetcher);
@@ -50,10 +57,34 @@ export const NewHomePage = () => {
         <h3 className='text-4xl text-home-background font-semibold'>
           Temukan Pilihan Buku Favoritmu
         </h3>
-        <p className='text-xl pt-2 font-light w-[35rem]'>
+        <p className='text-xl pt-2 font-light md:w-[35rem]'>
           Terdapat berbagai macam pilihan buku yang bisa kamu dengarkan atau
           baca.
         </p>
+      </div>
+    );
+  };
+
+  const booksResponsive = () => {
+    return (
+      <div className='mt-8 md:hidden gap-4'>
+        <Carousel className='w-full max-w-xs flex'>
+          <CarouselContent className="items-center">
+            {data?.data?.map((book, index) => (
+              <CarouselItem key={index}>
+                <BookList
+                  isLoading={isLoading}
+                  id={book.id}
+                  title={book.title}
+                  author={book.author}
+                  imageUrl={book.thumbnail_url}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext className="mr-10" />
+        </Carousel>
       </div>
     );
   };
@@ -62,7 +93,7 @@ export const NewHomePage = () => {
     return (
       <div className='bg-[#E3F0FA] px-8 font-fredoka h-full'>
         <h3 className='text-2xl'>Buku Yang Tersedia</h3>
-        <div className='mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+        <div className='mt-8 hidden md:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
           {data?.data?.map((book) => (
             <BookList
               isLoading={isLoading}
@@ -74,6 +105,7 @@ export const NewHomePage = () => {
             />
           ))}
         </div>
+        {booksResponsive()}
       </div>
     );
   };
@@ -83,7 +115,7 @@ export const NewHomePage = () => {
       {hero()}
       <img
         src={CloudIllustration}
-        className='absolute bottom-[-2.5rem] w-full object-cover md:object-contain'
+        className='absolute bottom-0 md:bottom-[-4.5rem] w-full object-cover md:object-contain'
       />
       {subheading()}
       {books()}
