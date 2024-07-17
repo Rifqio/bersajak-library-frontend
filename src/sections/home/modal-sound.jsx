@@ -11,14 +11,14 @@ import PropTypes from "prop-types";
 export const ModalSound = ({ onOpen, onOpenChange, onEnableAudio, onDisabledAudio, disabled }) => {
   return (
     <Dialog open={onOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="font-fredoka">
         <DialogHeader>
-          <DialogTitle>Ingin Mengaktifkan Fitur Suara?</DialogTitle>
+          <DialogTitle className="tracking-wide text-2xl">Ingin Mengaktifkan Fitur Suara?</DialogTitle>
           <DialogDescription className="pb-2">
-            Dolor ad adipisicing consectetur amet in non cillum amet dolor.
+            Untuk menambah pengalaman membaca, Anda dapat mengaktifkan fitur suara.
           </DialogDescription>
           <div className="flex justify-center gap-x-6">
-            <Button disabled={disabled} onClick={onEnableAudio} className="w-full rounded-full">
+            <Button disabled={disabled} onClick={onEnableAudio} className="w-full rounded-full bg-home-yellow hover:bg-yellow-800">
               Ya
             </Button>
             <Button disabled={disabled} onClick={onDisabledAudio} variant="outline" className="w-full rounded-full">

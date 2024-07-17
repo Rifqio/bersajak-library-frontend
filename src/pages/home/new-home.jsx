@@ -12,6 +12,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from "@/components/carousel";
+import { ModalSound } from "@/sections/home/modal-sound";
 
 export const NewHomePage = () => {
   const { data, isLoading } = useSwr("/book/list", fetcher);
@@ -119,6 +120,14 @@ export const NewHomePage = () => {
       />
       {subheading()}
       {books()}
+      {/* TODO */}
+      <ModalSound
+        disabled={true}
+        onOpen={false}
+        onEnableAudio={true}
+        // onOpenChange={setSoundModal}
+        onDisabledAudio={false}
+      />
     </>
   );
 };
