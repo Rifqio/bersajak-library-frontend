@@ -1,3 +1,4 @@
+import { pressLeftArrow, pressRightArrow, pressSpacebar } from "@/lib/accessibility";
 import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import { StartQuizDialog } from "@/sections/quiz/start-quiz-dialog";
@@ -15,6 +16,7 @@ const AudioBookPage = () => {
   const [onPlayIntroAudio, setOnPlayIntroAudio] = useState(false);
   const [onStartQuiz, setOnStartQuiz] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isPlayingAudioBook, setIsPlayingAudioBook] = useState(false);
 
   const [bookFinishedAudio, setBookFinishedAudio] = useState(null);
   const introAudio = useRef(null);
@@ -48,6 +50,21 @@ const AudioBookPage = () => {
       isFuzzyMatch: true,
       fuzzyMatchingThreshold: 0.2,
       bestMatchOnly: true
+    },
+    {
+      command: ["percepat", "berhenti", "kembali"],
+      callback: (command) => {
+        if (!isPlayingAudioBook) {
+          return;
+        }
+        if (command === "percepat") {
+          pressRightArrow();
+        } else if (command === "berhenti") {
+          pressSpacebar();
+        } else if (command === "kembali") {
+          pressLeftArrow();
+        }
+      }
     }
   ];
 
@@ -57,11 +74,13 @@ const AudioBookPage = () => {
     setOnPlayIntroAudio(false);
     setOnPlayBookAudio(true);
     if (bookAudio.current) {
+      SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
       bookAudio.current.audio.current.play();
     }
   };
 
   const onEndBookAudio = () => {
+    setIsPlayingAudioBook(false);
     setOnPlayBookAudio(false);
     setOnStartQuiz(true);
     setBookFinishedAudio(`/guide/book-finished`);
@@ -111,6 +130,7 @@ const AudioBookPage = () => {
         controls
         style={onPlayIntroAudio ? { pointerEvents: "none" } : {}}
         ref={bookAudio}
+        onPlay={() => setIsPlayingAudioBook(true)}
         onEnded={onEndBookAudio}
         autoPlay={onPlayBookAudio}
         src={audioUrl}

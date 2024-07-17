@@ -1,15 +1,22 @@
 import { ErrorModal } from "@/components/error-modal";
-import { Navbar } from "@/sections";
+import { NavbarPage } from "@/sections/navbar-page";
+import CloudIllustration from "../assets/cloudNavbar3.svg";
 import { Outlet } from "react-router-dom";
 
 const BookLayout = () => {
-    return (
-        <div className='min-h-screen bg-gradient-to-t from-white to-pink-50 px-20'>
-            <Navbar className='pt-10' />
-            <Outlet />
-            <ErrorModal />
-        </div>
-    );
+  return (
+    <>
+      <NavbarPage className='pt-10 px-20 pb-10'/>
+      <img
+        src={CloudIllustration}
+        className='absolute z-10 w-full top-14 object-cover md:object-contain'
+      />
+      <div className='min-h-screen bg-white px-20'>
+        <Outlet />
+        <ErrorModal />
+      </div>
+    </>
+  );
 };
 
 export default BookLayout;

@@ -39,7 +39,8 @@ module.exports = {
         },
         home: {
           background: "#7166CD",
-          yellow: "#fdb849"
+          yellow: "#fdb849",
+          blue: '#94C1EB'
         },
         foreground: "hsl(var(--foreground))",
         primary: {

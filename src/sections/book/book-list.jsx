@@ -29,7 +29,7 @@ const BookList = ({ id, title, author, imageUrl }) => {
       className='w-[250px] h-[450px] cursor-pointer flex flex-col bg-white shadow-md transition-transform transform hover:scale-105'
     >
       <div
-        className='w-full h-full md:h-3/4 bg-cover bg-center'
+        className='w-full h-3/4 md:h-3/4 bg-cover bg-center'
         style={{ backgroundImage: `url(${imageUrl})` }}
       ></div>
       <CardContent className='mt-6'>
