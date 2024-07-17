@@ -25,17 +25,17 @@ export const Navbar = ({ className, isDark }) => {
             <img className="w-16 h-16" src="/bersajak.png" />
             <button
               onClick={handleNavigate}
-              className={`text-2xl ${isDark ? 'text-yellow-100 ' : 'text-[#2B3448] '} font-poppins tracking-tight font-bold cursor-pointer`}
+              className={`text-2xl ${isDark ? 'text-yellow-100 ' : 'text-white '} font-poppins tracking-tight font-bold cursor-pointer`}
             >
               Bersajak
             </button>
           </div>
-          <div className="hidden md:flex md:items-center">
+          <div className="hidden md:flex md:items-center font-fredoka">
             <ul className="flex items-center space-x-6">
-              <li className={`font-bold ${isDark ? 'text-yellow-100' : 'text-gray-700'}`}>Masuk</li>
-              <Button className={`bg-[#EEBE62] ${isDark ? 'text-black' : 'text-gray-700'} font-bold font-nunito text-base hover:bg-[#BF8140]`}>
+              <button className="bg-home-background text-home-yellow border-4 border-home-background tracking-wide rounded-full w-20 h-10 text-light text-base hover:bg-[#BF8140]">Masuk</button>
+              <button className="bg-home-yellow text-home-background tracking-wide rounded-full w-28 h-10 text-light text-base hover:cursor-pointer hover:bg-[#BF8140]">
                 Daftar
-              </Button>
+              </button>
             </ul>
           </div>
           <div className="flex md:hidden items-center">

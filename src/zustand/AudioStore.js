@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 const useAudioStore = create(
   persist(
     (set) => ({
-      isAudioEnabled: true,
+      isAudioEnabled: false,
       firstVisit: true,
       setIsAudioEnabled: (value) => set({ isAudioEnabled: value, firstVisit: false }),
     }),

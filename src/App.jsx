@@ -10,22 +10,27 @@ import AudioBookPage from "./pages/book/audio-book";
 import ErrorBoundary from "./pages/error/ErrorBoundary";
 import { NewMultipleChoice } from "./pages/quiz/new-multiple-choice";
 import { BookListPage } from "./pages/book/book-list";
+import { NewHomePage } from "./pages/home/new-home";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <ErrorBoundary>
-        <DashboardLayout />
+        <Outlet />
       </ErrorBoundary>
     ),
     children: [
       {
         path: "/",
-        element: <HomePage />
+        element: <NewHomePage />
       }
     ]
   },
+  // {
+  //   path: "home",
+  //   element: <NewHomePage />
+  // },
   {
     path: "book",
     element: (

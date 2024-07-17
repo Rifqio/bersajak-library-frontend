@@ -22,7 +22,8 @@ module.exports = {
         playfair: ["Playfair Display", "serif"],
         poppins: ["Poppins", "sans-serif"],
         openSans: ["Open Sans", "sans-serif"],
-        abeezee: ["ABeeZee", "sans-serif"]
+        abeezee: ["ABeeZee", "sans-serif"],
+        fredoka: ["Fredoka", "sans-serif"]
       },
       colors: {
         border: "hsl(var(--border))",
@@ -32,9 +33,13 @@ module.exports = {
         background_1: "#F7F9EC",
         quiz: {
           background: "#932C6B",
-          red: '#D70B52',
-          lightBlue: '#47a1dd',
-          darkBlue: '#2d2d83'
+          red: "#D70B52",
+          lightBlue: "#47a1dd",
+          darkBlue: "#2d2d83"
+        },
+        home: {
+          background: "#7166CD",
+          yellow: "#fdb849"
         },
         foreground: "hsl(var(--foreground))",
         primary: {

@@ -49,11 +49,12 @@ const HomePage = () => {
   const availableBookAudioRef = useRef(null);
 
   useEffect(() => {
-    if (firstVisit) {
+    // if (firstVisit) {
       setSoundModal(true);
       setOnPlayGreetings(true);
-    }
-  }, [firstVisit]);
+      new Audio("/audio/greeting.mp3").play();
+    // }
+  }, []);
 
   useEffect(() => {
     if (isAudioPlaying) {
@@ -135,7 +136,7 @@ const HomePage = () => {
     }
   ];
 
-  useSpeechRecognition({ commands });
+  const { isMicrophoneAvailable } = useSpeechRecognition({ commands });
 
   const onEnableAudio = () => {
     setSoundModal(false);
@@ -240,7 +241,7 @@ const HomePage = () => {
         {/* Selamat datang di bersajak... */}
         <audio
           ref={greetingAudioRef}
-          autoPlay={onPlayGreetings}
+          autoPlay
           onPlay={() => setIsAudioPlaying(true)}
           onEnded={onEndedGreeting}
           // src={audioUrl}
