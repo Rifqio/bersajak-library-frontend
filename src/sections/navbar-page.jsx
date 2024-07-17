@@ -31,6 +31,7 @@ export const NavbarPage = ({ className, isDark }) => {
               Bersajak
             </button>
           </div>
+          {/* Desktop */}
           <div className='hidden md:flex md:items-center font-fredoka z-10'>
             <ul className='flex items-center space-x-6'>
               <button className='bg-home-background text-home-yellow border-4 border-home-background tracking-wide rounded-full w-20 h-10 text-light text-base hover:bg-[#BF8140]'>
@@ -41,28 +42,12 @@ export const NavbarPage = ({ className, isDark }) => {
               </button>
             </ul>
           </div>
-          <div className='flex md:hidden items-center'>
-            <button
-              onClick={toggleMenu}
-              className='text-gray-700 focus:outline-none'
-            >
-              {!isMenuOpen ? <AlignJustify size={24} /> : <X size={24} />}
-            </button>
-          </div>
+          {/* Mobile */}
         </div>
       </div>
-      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
-        <ul className='px-2 pt-2 pb-3 space-y-2 sm:px-3'>
-          <Button className='w-full text-white font-bold font-nunito'>
-            Masuk
-          </Button>
-          <Button className='bg-[#EEBE62] z-10 text-white font-bold font-nunito text-base hover:bg-[#BF8140] w-full text-center'>
-            Daftar
-          </Button>
-        </ul>
-      </div>
-      <div className='absolute left-0 top-0 w-14 z-0 h-14 rounded-br-full bg-[#94C1EB]' />
-      <div className='absolute right-0 pl-20 top-0 w-44 z-0 h-36 rounded-bl-full bg-[#E33A79]' />
+    
+      <div className='absolute left-0 top-0 w-10 h-10 md:w-14 z-0 md:h-14 rounded-br-full bg-[#94C1EB]' />
+      <div className='absolute z-0 right-0 lg:pl-20 top-0 w-28 h-28 lg:w-44 lg:h-36 rounded-bl-full bg-[#E33A79]' />
     </nav>
   );
 };

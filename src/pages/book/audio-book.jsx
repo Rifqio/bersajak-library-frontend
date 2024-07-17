@@ -128,6 +128,7 @@ const AudioBookPage = () => {
 
       <AudioPlayer
         controls
+        className="w-[18.75rem] lg:w-full"
         style={onPlayIntroAudio ? { pointerEvents: "none" } : {}}
         ref={bookAudio}
         onPlay={() => setIsPlayingAudioBook(true)}

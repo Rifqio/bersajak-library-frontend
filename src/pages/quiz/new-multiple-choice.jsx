@@ -242,7 +242,7 @@ export const NewMultipleChoice = () => {
   };
 
   return (
-    <div className='bg-quiz-darkBlue min-h-screen font-poppins'>
+    <div className='bg-quiz-darkBlue h-screen font-poppins'>
       {renderAudioSection()}
       <Progress
         value={(countdown / 40) * 100}
@@ -250,8 +250,8 @@ export const NewMultipleChoice = () => {
       />
       <ToastContainer />
       <div className='flex flex-col items-center justify-center min-h-screen px-4 sm:px-8'>
-        <div className='w-2/4 md:w-2/3 lg:w-1/2 xl:w-1/3 h-[40vh] flex items-center justify-center border-quiz-lightBlue border-4 rounded-xl mb-6'>
-          <h1 className='px-4 text-center text-white text-4xl'>{question}</h1>
+        <div className='w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 h-[30vh] lg:h-[40vh] flex items-center justify-center border-quiz-lightBlue border-4 rounded-xl mb-6'>
+          <h1 className='px-4 text-center text-white text-3xl lg:text-4xl'>{question}</h1>
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8'>
@@ -264,7 +264,7 @@ export const NewMultipleChoice = () => {
               }}
               className='border-quiz-lightBlue w-full md:w-80 mb-4 md:mb-0 flex items-center h-20 border-4 rounded-lg focus:bg-quiz-red hover:bg-quiz-red hover:cursor-pointer'
             >
-              <h1 className='pl-4 text-2xl font-bold text-white'>
+              <h1 className='pl-4 text-base md:text-2xl font-bold text-white'>
                 {item.key.toUpperCase()}
               </h1>
               <p className='pl-4 text-white font-semibold leading-none tracking-normal'>

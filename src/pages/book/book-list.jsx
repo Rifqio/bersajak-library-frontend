@@ -48,7 +48,7 @@ export const BookListPage = () => {
     return (
       <>
         {booklist?.data.map((book) => (
-          <div key={book.id} className="drop-shadow-lg shadow-lg">
+          <div key={book.id}>
             <BookList
               isLoading={isLoading}
               key={book.id}
@@ -66,15 +66,15 @@ export const BookListPage = () => {
   return (
     <div className='pt-10'>
       <div className='text-center flex flex-col justify-center items-center'>
-        <Input placeholder="Cari Buku" className="w-1/2 h-8 font-fredoka rounded-full focus-visible:ring-home-background"/>
-        <h1 className='text-home-background text-4xl pt-4 font-fredoka font-semibold'>
+        <Input placeholder="Cari Buku" className="w-full lg:w-1/2 h-8 font-fredoka rounded-full focus-visible:ring-home-background"/>
+        <h1 className='text-home-background text-2xl md:text-4xl pt-4 font-fredoka font-semibold'>
           Temukan Berbagai
         </h1>
-        <h1 className='text-home-background text-4xl font-fredoka font-semibold'>
+        <h1 className='text-home-background text-2xl md:text-4xl font-fredoka font-semibold'>
           Macam Pilihan Buku
         </h1>
       </div>
-      <div className='grid grid-cols-4 gap-x-2 pt-8'>
+      <div className='grid grid-cols-2 lg:grid-cols-4 gap-y-8 gap-x-14 md:gap-y-0 md:gap-x-2 pt-8'>
         <audio src={chooseBookData?.data?.audio} onEnded={onListen} autoPlay />
         {displayBooks()}
       </div>

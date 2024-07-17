@@ -92,7 +92,7 @@ export const NewHomePage = () => {
 
   const books = () => {
     return (
-      <div className='bg-[#E3F0FA] px-8 font-fredoka h-full'>
+      <div className='bg-[#E3F0FA] pt-14 flex justify-center flex-col items-center md:justify-normal md:block md:pt-0 px-8 font-fredoka h-screen'>
         <h3 className='text-2xl'>Buku Yang Tersedia</h3>
         <div className='mt-8 hidden md:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
           {data?.data?.map((book) => (
@@ -116,10 +116,11 @@ export const NewHomePage = () => {
       {hero()}
       <img
         src={CloudIllustration}
-        className='absolute bottom-0 md:bottom-[-4.5rem] w-full object-cover md:object-contain'
+        className='absolute bottom-[-20rem] md:bottom-[-3.5rem] w-full object-cover md:object-contain'
       />
       {subheading()}
       {books()}
+      <div className='bg-[#E3F0FA] h-1/6 md:hidden' />
       {/* TODO */}
       <ModalSound
         disabled={true}
