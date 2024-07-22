@@ -38,7 +38,7 @@ export const BookListPage = () => {
 
   useSpeechRecognition({ commands });
   const onListen = () => {
-    // SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
+    SpeechRecognition.startListening({ continuous: true, language: "id-ID" });
   };
 
   const displayBooks = () => {

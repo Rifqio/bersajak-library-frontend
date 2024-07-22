@@ -120,7 +120,7 @@ const AudioBookPage = () => {
       />
       <div className='flex justify-center mb-4'>
         <img
-          className='object-cover w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-md drop-shadow-md'
+          className='object-cover max-w-xs h-[50vh] md:h-screen sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-md drop-shadow-md'
           src={book?.thumbnail_url}
           alt='Book Cover'
         />
@@ -128,7 +128,7 @@ const AudioBookPage = () => {
 
       <AudioPlayer
         controls
-        className="w-[18.75rem] lg:w-full"
+        className="w-[18.75rem] mt-10 lg:mt-0 lg:w-full"
         style={onPlayIntroAudio ? { pointerEvents: "none" } : {}}
         ref={bookAudio}
         onPlay={() => setIsPlayingAudioBook(true)}
