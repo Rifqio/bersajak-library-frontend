@@ -155,6 +155,10 @@ export const NewHomePage = () => {
     }
   ];
 
+  const goToBookList = () => {
+    navigate('/book/list');
+  }
+
   useEffect(() => {
     if (onPlayGreetings && soundModal) {
       const greetings = new Audio("/audio/greeting.mp3");
@@ -261,6 +265,11 @@ export const NewHomePage = () => {
               imageUrl={book.thumbnail_url}
             />
           ))}
+        </div>
+        <div className='flex items-center justify-center pt-4'>
+          <Button onClick={goToBookList} className='bg-[#EEBE62] text-white font-bold font-nunito text-base hover:bg-[#BF8140] text-center'>
+            Lihat Buku Lain
+          </Button>
         </div>
         {booksResponsive()}
       </div>
