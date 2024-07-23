@@ -161,18 +161,17 @@ export const NewHomePage = () => {
 
   useEffect(() => {
     const playAudio = () => {
-      const greetingsAudioUrl = 'https://api.bersajak.com/assets/audio/guide/greeting.wav'
+      const greetingsAudioUrl =
+        "https://api.bersajak.com/assets/audio/guide/greeting.wav";
       const greetings = new Audio(greetingsAudioUrl);
       greetings.play();
       greetings.onended = () => onEndedGreetings();
     };
 
     if (onPlayGreetings && soundModal) {
-      document.addEventListener("mouseover", playAudio, { once: true });
       document.addEventListener("click", playAudio, { once: true });
 
       return () => {
-        document.removeEventListener("mouseover", playAudio);
         document.removeEventListener("click", playAudio);
       };
     }
@@ -200,12 +199,12 @@ export const NewHomePage = () => {
               Membuka petualangan baru di setiap halaman
             </h1>
             <h2 className='text-home-yellow text-3xl font-semibold pb-2'>
-              Enim do Lorem qui.
+              Belajar Sastra Hijau Anak
             </h2>
             <p className='text-white pb-4 font-light tracking-tight'>
-              Pariatur laborum veniam irure id Lorem id dolor magna pariatur
-              dolore deserunt. Adipisicing ullamco anim nisi exercitation Lorem
-              exercitation sit anim sunt.
+              Selamat datang di dunia imajinasi tanpa batas! Ayo bergabung
+              dalam petualangan seru melalui setiap halaman yang penuh dengan
+              cerita inspiratif dan edukatif.
             </p>
             <Button className='bg-home-yellow font-normal text-home-background rounded-full text-base hover:bg-[#BF8140]'>
               Gabung sekarang
