@@ -38,8 +38,8 @@ module.exports = {
           darkBlue: "#2d2d83"
         },
         home: {
-          // background: "#7166CD",
-          background: "#7DC431",
+          background: "#7166CD",
+          // background: "#7DC431",
           yellow: "#F9B939",
           blue: '#94C1EB'
         },

@@ -156,16 +156,26 @@ export const NewHomePage = () => {
   ];
 
   const goToBookList = () => {
-    navigate('/book/list');
-  }
+    navigate("/book/list");
+  };
 
   useEffect(() => {
-    if (onPlayGreetings && soundModal) {
-      const greetings = new Audio("/audio/greeting.mp3");
+    const playAudio = () => {
+      const greetings = new Audio("/audio/greeting.wav");
       greetings.play();
       greetings.onended = () => onEndedGreetings();
+    };
+
+    if (onPlayGreetings && soundModal) {
+      document.addEventListener("mouseover", playAudio, { once: true });
+      document.addEventListener("click", playAudio, { once: true });
+
+      return () => {
+        document.removeEventListener("mouseover", playAudio);
+        document.removeEventListener("click", playAudio);
+      };
     }
-  }, [onPlayGreetings, soundModal]);
+  }, [onPlayGreetings, soundModal, onEndedGreetings]);
 
   useEffect(() => {
     if (isAudioPlaying) {
@@ -267,7 +277,10 @@ export const NewHomePage = () => {
           ))}
         </div>
         <div className='flex items-center justify-center pt-4'>
-          <Button onClick={goToBookList} className='bg-[#EEBE62] text-white font-bold font-nunito text-base hover:bg-[#BF8140] text-center'>
+          <Button
+            onClick={goToBookList}
+            className='bg-[#EEBE62] text-white font-bold font-nunito text-base hover:bg-[#BF8140] text-center'
+          >
             Lihat Buku Lain
           </Button>
         </div>
