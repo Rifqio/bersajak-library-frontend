@@ -1,4 +1,4 @@
-import { pressLeftArrow, pressRightArrow, pressSpacebar } from "@/lib/accessibility";
+// import { pressLeftArrow, pressRightArrow, pressSpacebar } from "@/lib/accessibility";
 import { fetcher } from "@/lib/fetcher";
 import { useSwr } from "@/lib/swr";
 import { StartQuizDialog } from "@/sections/quiz/start-quiz-dialog";
@@ -16,7 +16,6 @@ const AudioBookPage = () => {
   const [onPlayIntroAudio, setOnPlayIntroAudio] = useState(false);
   const [onStartQuiz, setOnStartQuiz] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [isPlayingAudioBook, setIsPlayingAudioBook] = useState(false);
 
   const [bookFinishedAudio, setBookFinishedAudio] = useState(null);
   const introAudio = useRef(null);
@@ -39,7 +38,7 @@ const AudioBookPage = () => {
     {
       command: ["pilihan ganda", "melengkapi kata"],
       callback: (command) => {
-        if (!isPlayingAudio) {
+        if (!isPlayingAudio && !onPlayBookAudio) {
           if (command === "pilihan ganda") {
             navigate(`/quiz/multiple-choice/${id}`);
           } else {
@@ -50,22 +49,22 @@ const AudioBookPage = () => {
       isFuzzyMatch: true,
       fuzzyMatchingThreshold: 0.2,
       bestMatchOnly: true
-    },
-    {
-      command: ["percepat", "berhenti", "kembali"],
-      callback: (command) => {
-        if (!isPlayingAudioBook) {
-          return;
-        }
-        if (command === "percepat") {
-          pressRightArrow();
-        } else if (command === "berhenti") {
-          pressSpacebar();
-        } else if (command === "kembali") {
-          pressLeftArrow();
-        }
-      }
     }
+    // {
+    //   command: ["percepat", "berhenti", "kembali"],
+    //   callback: (command) => {
+    //     if (!isPlayingAudioBook) {
+    //       return;
+    //     }
+    //     if (command === "percepat") {
+    //       pressRightArrow();
+    //     } else if (command === "berhenti") {
+    //       pressSpacebar();
+    //     } else if (command === "kembali") {
+    //       pressLeftArrow();
+    //     }
+    //   }
+    // }
   ];
 
   useSpeechRecognition({ commands });
@@ -80,7 +79,6 @@ const AudioBookPage = () => {
   };
 
   const onEndBookAudio = () => {
-    setIsPlayingAudioBook(false);
     setOnPlayBookAudio(false);
     setOnStartQuiz(true);
     setBookFinishedAudio(`/guide/book-finished`);
@@ -93,6 +91,11 @@ const AudioBookPage = () => {
       SpeechRecognition.stopListening();
     }
   }, [isPlayingAudio]);
+
+  const onPlayAudioBook = () => {
+    setOnPlayBookAudio(true);
+    SpeechRecognition.stopListening();
+  };
 
   const introAudioUrl = guideData?.data;
   const book = data?.data;
@@ -109,6 +112,7 @@ const AudioBookPage = () => {
         src={introAudioUrl}
         autoPlay={onPlayIntroAudio}
       />
+      {/* Buku selesai dibaca */}
       <audio
         ref={quizStartAudio}
         className='hidden'
@@ -128,12 +132,11 @@ const AudioBookPage = () => {
 
       <AudioPlayer
         controls
-        className="w-[18.75rem] mt-10 lg:mt-0 lg:w-full"
+        className='w-[18.75rem] mt-10 lg:mt-0 lg:w-full'
         style={onPlayIntroAudio ? { pointerEvents: "none" } : {}}
         ref={bookAudio}
-        onPlay={() => setIsPlayingAudioBook(true)}
+        onPlay={onPlayAudioBook}
         onEnded={onEndBookAudio}
-        autoPlay={onPlayBookAudio}
         src={audioUrl}
       />
 
