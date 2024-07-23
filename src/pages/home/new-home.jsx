@@ -161,7 +161,8 @@ export const NewHomePage = () => {
 
   useEffect(() => {
     const playAudio = () => {
-      const greetings = new Audio("/audio/greeting.wav");
+      const greetingsAudioUrl = 'https://api.bersajak.com/assets/audio/guide/greeting.wav'
+      const greetings = new Audio(greetingsAudioUrl);
       greetings.play();
       greetings.onended = () => onEndedGreetings();
     };
