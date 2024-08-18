@@ -50,9 +50,9 @@ const HomePage = () => {
 
   useEffect(() => {
     // if (firstVisit) {
-      setSoundModal(true);
-      setOnPlayGreetings(true);
-      new Audio("/audio/greeting.mp3").play();
+    setSoundModal(true);
+    setOnPlayGreetings(true);
+    new Audio("/audio/greeting.mp3").play();
     // }
   }, []);
 
@@ -189,9 +189,6 @@ const HomePage = () => {
             dolore deserunt. Adipisicing ullamco anim nisi exercitation Lorem
             exercitation sit anim sunt.
           </p>
-          <Button className='bg-[#EEBE62] text-[#40485A] font-bold font-nunito text-base hover:bg-[#BF8140]'>
-            Gabung sekarang
-          </Button>
         </div>
         <div className='items-start mt-10 md:-mt-24 relative z-10 px-4 md:px-0'>
           <img

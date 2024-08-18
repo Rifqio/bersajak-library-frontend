@@ -202,13 +202,10 @@ export const NewHomePage = () => {
               Belajar Sastra Hijau Anak
             </h2>
             <p className='text-white pb-4 font-light tracking-tight'>
-              Selamat datang di dunia imajinasi tanpa batas! Ayo bergabung
-              dalam petualangan seru melalui setiap halaman yang penuh dengan
-              cerita inspiratif dan edukatif.
+              Selamat datang di dunia imajinasi tanpa batas! Ayo bergabung dalam
+              petualangan seru melalui setiap halaman yang penuh dengan cerita
+              inspiratif dan edukatif.
             </p>
-            <Button className='bg-home-yellow font-normal text-home-background rounded-full text-base hover:bg-[#BF8140]'>
-              Gabung sekarang
-            </Button>
           </div>
           <div className='items-start mt-10 md:-mt-24 relative z-10 px-4 md:px-0'>
             <img
