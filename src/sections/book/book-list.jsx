@@ -1,6 +1,5 @@
 import { Card, CardContent, CardTitle } from "@/components";
 import { ROUTE } from "@/lib/constants";
-import { useAudioStore } from "@/zustand";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 

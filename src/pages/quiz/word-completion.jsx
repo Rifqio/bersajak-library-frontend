@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useMicrophone } from "@/hooks";
 import { usePost, useSwr } from "@/lib/swr";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { fetcher } from "@/lib/fetcher";
 import { get, isEmpty } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -10,19 +10,11 @@ import { Button, Progress } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import BooksIllustration from "../../assets/board.svg";
 import { CancelDialog } from "@/sections/quiz";
-import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import ScoreDialog from "@/sections/quiz/score-dialog";
-import SpeechRecognition, {
-  useSpeechRecognition
-} from "react-speech-recognition";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import axios from "@/lib/axios";
-
-const buttonView = {
-  width: "100px",
-  height: "100px"
-};
 
 function splitQuestion(question) {
   const clueMatch = question.match(/\b\w*_\w*\b/);
@@ -46,8 +38,6 @@ const WordCompletionPage = () => {
   const [numberQuiz, setNumberQuiz] = useState(1);
   const totalQuestion = 5;
   const [score, setScore] = useState(0);
-  const [isPlayingIntro, setIsPlayingIntro] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(true);
   const [answerState, setAnswerState] = useState(0);
   const [isShowScore, setIsShowScore] = useState(false);
   const [cancelQuiz, setCancelQuiz] = useState(false);
@@ -83,7 +73,6 @@ const WordCompletionPage = () => {
     {
       command: "*",
       callback: async (command) => {
-        // To avoid double submit
         if (answerState > 1) {
           return;
         } else {
@@ -150,7 +139,7 @@ const WordCompletionPage = () => {
     }
   };
 
-  //AUDITO SECTION
+  // AUDIO SECTION
   const answerCorrectRef = useRef(null);
   const answerWrongRef = useRef(null);
   const audioQuestionRef = useRef(null);
@@ -168,152 +157,85 @@ const WordCompletionPage = () => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
     } else if (countdown === 0) {
-      toast.error("Jawaban salah!", {
+      toast.error("Waktu habis!", {
         autoClose: 2000
       });
-      // answerWrongRef.current.play();
       handleNextQuiz();
     }
 
     return () => {
       clearInterval(timer);
     };
-  }, [countdown, isPlayingIntro]);
+  }, [countdown]);
 
   useEffect(() => {
     if (numberQuiz === 1 && audioIntroRef.current) {
-      setIsPlayingIntro(true);
-      setIsPlayingAudio(true);
       audioIntroRef.current.play();
     }
   }, [audioIntroUrl]);
 
   useEffect(() => {
-    if (numberQuiz > 1 && audioQuestionRef.current) {
-      setIsPlayingAudio(true);
+    if (audioQuestionRef.current) {
       audioQuestionRef.current.play().catch((error) => {
         console.error("Error playing the audio:", error);
       });
     }
   }, [numberQuiz, audioQuestionUrl]);
 
-  const AudioSection = () => {
-    return (
-      <>
-        <audio
-          onEnded={() => {
-            audioQuestionRef.current.play();
-          }}
-          ref={audioIntroRef}
-          className='hidden'
-          src={audioIntroUrl}
-        />
-        <audio
-          ref={audioQuestionRef}
-          onEnded={() => setIsPlayingAudio(false)}
-          onPlay={() => setIsPlayingAudio(true)}
-          src={audioQuestionUrl}
-          className='hidden'
-        />
-        <audio onEnded={handleNextQuiz}>
-          <audio
-            ref={answerCorrectRef}
-            src={answerCorrectUrl?.data}
-            className='hidden'
-          />
-          <audio
-            ref={answerWrongRef}
-            src={answerWrongUrl?.data}
-            className='hidden'
-          />
-        </audio>
-      </>
-    );
-  };
-
-  // PRESENTATION RENDER
   return (
-    <div className='mt-16 h-screen flex flex-col'>
-      {AudioSection()}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      {/* Audio Elements */}
+      <audio ref={audioIntroRef} src={audioIntroUrl} className="hidden" />
+      <audio ref={audioQuestionRef} src={audioQuestionUrl} className="hidden" />
+      <audio ref={answerCorrectRef} src={answerCorrectUrl?.data} className="hidden" />
+      <audio ref={answerWrongRef} src={answerWrongUrl?.data} className="hidden" />
+
       <ToastContainer />
+
       <Progress
         value={(countdown / 20) * 100}
-        className='w-full fixed top-0 left-0 rounded-none h-2 bg-green-500'
+        className="w-full fixed top-0 left-0 h-2 bg-green-500"
       />
-      <div style={{ padding: "20px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px"
-          }}
-        >
-          <div style={buttonView}>
-            <Button
-              onClick={handleBackButton}
-              className='bg-red-500 hover:bg-red-700 font-poppins font-bold text-white'
-              style={{ width: "200px" }}
-            >
-              Kembali
-            </Button>
-          </div>
-          <div>
-            <div
-              className='flex flex-col items-center justify-center h-screen'
-              style={{ marginTop: "-8rem" }}
-            >
-              <div className='relative'>
-                <img
-                  src={BooksIllustration}
-                  alt='Books Illustration'
-                  className='mx-auto'
-                  style={{ maxWidth: "100%", height: "500px" }}
-                />
-                <h1
-                  className='text-4xl text-white font-poppins font-medium absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center'
-                  style={{ top: "calc(50% - 120px)" }}
-                >
-                  {result.question}
-                </h1>
-                <div className='text-center pt-2' style={{ marginTop: "10px" }}>
-                  {splitClue.map((letter, index) => (
-                    <input
-                      key={index}
-                      type='text'
-                      className='text-center drop-shadow-md w-12 h-12 bg-green-500 text-white font-poppins font-semibold text-2xl rounded-lg mx-2'
-                      style={{ border: "none" }}
-                      value={letter}
-                      readOnly
-                    />
-                  ))}
-                </div>
+
+      <div className="w-full max-w-5xl px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            onClick={handleBackButton}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Kembali
+          </Button>
+          <div className="text-xl font-bold">Score: {score}</div>
+        </div>
+
+        <div className="flex flex-col items-center bg-white shadow-lg rounded-lg p-8">
+          <img
+            src={BooksIllustration}
+            alt="Books Illustration"
+            className="w-full max-w-md mb-8"
+          />
+          <h1 className="text-2xl md:text-4xl font-semibold text-center mb-4">
+            {result.question}
+          </h1>
+          <div className="flex space-x-2">
+            {splitClue.map((letter, index) => (
+              <div
+                key={index}
+                className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center bg-green-500 text-white text-xl md:text-2xl font-bold rounded-lg shadow"
+              >
+                {letter}
               </div>
-            </div>
-          </div>
-          <div style={{ width: "100px", height: "100px" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%"
-              }}
-            >
-              <div className='bg-black text-white font-poppins font-bold text-xl p-4 rounded'>
-                Score: {score}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+
       <CancelDialog
         onOpen={cancelQuiz}
         onOpenChange={setCancelQuiz}
         onCancel={onCancelQuiz}
       />
       <ScoreDialog
-        isPlayingAudio={isPlayingAudio}
-        setIsPlayingAudio={setIsPlayingAudio}
         onOpen={isShowScore}
         onBack={onCancelQuiz}
         score={score}

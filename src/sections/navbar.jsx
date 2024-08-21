@@ -1,12 +1,9 @@
 import { ROUTE } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useState } from "react";
 
 export const Navbar = ({ className, isDark }) => {
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const handleNavigate = () => {
     navigate(ROUTE.Home);
   };

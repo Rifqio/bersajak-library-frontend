@@ -170,9 +170,11 @@ export const NewHomePage = () => {
 
     if (onPlayGreetings && soundModal) {
       document.addEventListener("click", playAudio, { once: true });
+      document.addEventListener("touchstart", playAudio, { once: true });
 
       return () => {
         document.removeEventListener("click", playAudio);
+        document.removeEventListener("touchstart", playAudio);
       };
     }
   }, [onPlayGreetings, soundModal, onEndedGreetings]);
@@ -219,20 +221,6 @@ export const NewHomePage = () => {
     );
   };
 
-  const subheading = () => {
-    return (
-      <div className='h-0 md:h-1/3 bg-[#E3F0FA] pt-12 font-fredoka text-center flex items-center flex-col'>
-        <h3 className='text-4xl text-home-background font-semibold'>
-          Temukan Pilihan Buku Favoritmu
-        </h3>
-        <p className='text-xl pt-2 font-light md:w-[35rem]'>
-          Terdapat berbagai macam pilihan buku yang bisa kamu dengarkan atau
-          baca.
-        </p>
-      </div>
-    );
-  };
-
   const booksResponsive = () => {
     return (
       <div className='mt-8 md:hidden gap-4'>
@@ -257,11 +245,25 @@ export const NewHomePage = () => {
     );
   };
 
+  const subheading = () => {
+    return (
+      <div className='h-0 md:h-1/3 bg-[#E3F0FA] pt-12 font-fredoka text-center flex items-center flex-col'>
+        <h3 className='text-4xl text-home-background font-semibold'>
+          Temukan Pilihan Buku Favoritmu
+        </h3>
+        <p className='text-xl pt-2 font-light md:w-[35rem]'>
+          Terdapat berbagai macam pilihan buku yang bisa kamu dengarkan atau
+          baca.
+        </p>
+      </div>
+    );
+  };
+
   const books = () => {
     return (
-      <div className='bg-[#E3F0FA] pt-0 h-[70%] md:h-screen flex justify-center flex-col items-center md:justify-normal md:block md:pt-0 px-8 font-fredoka'>
+      <div className='bg-[#E3F0FA] pt-0 h-[70%] md:h-screen flex justify-center xl:pl-28 flex-col items-center md:justify-normal md:block md:pt-0 px-8 font-fredoka'>
         <h3 className='text-2xl'>Buku Yang Tersedia</h3>
-        <div className='mt-8 hidden md:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+        <div className='mt-4 hidden md:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-40'>
           {data?.data?.map((book) => (
             <BookList
               isLoading={isLoading}
@@ -338,10 +340,10 @@ export const NewHomePage = () => {
     <>
       {hero()}
       {audioSection()}
-      <img
+      {/* <img
         src={CloudIllustration}
         className='hidden absolute md:block md:bottom-[-3.5rem] w-full object-cover md:object-contain'
-      />
+      /> */}
       {subheading()}
       {books()}
       {/* TODO */}

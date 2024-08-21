@@ -1,20 +1,12 @@
-import { Button } from "@/components";
 import { ROUTE } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useState } from "react";
-import { AlignJustify, Circle, X } from "lucide-react";
 
 export const NavbarPage = ({ className, isDark }) => {
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleNavigate = () => {
     navigate(ROUTE.Home);
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
